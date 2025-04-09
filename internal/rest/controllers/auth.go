@@ -36,23 +36,14 @@ func (a AuthController) dummyLoginHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var role models.UserRole
-	switch rest.UserRole(request.Role) {
-	case rest.UserRoleEmployee:
-		role = models.RoleEmployee
-
-	case rest.UserRoleModerator:
-		role = models.RoleModerator
-
-	default:
+	role, err := models.GetRoleFromString(string(request.Role))
+	if err != nil {
 		rest.WriteError(w, a.log, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
 
-	ctx := r.Context()
-
 	var openApiToken rest.Token
-	openApiToken, err := a.userService.DummyLogin(ctx, role)
+	openApiToken, err = a.userService.DummyLogin(r.Context(), role)
 	if err != nil {
 		rest.WriteError(w, a.log, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"time"
 )
@@ -19,3 +20,16 @@ const (
 	ProductTypeClothing    ProductType = "clothing"
 	ProductTypeShoes       ProductType = "shoes"
 )
+
+func GetProductTypeFromString(str string) (ProductType, error) {
+	switch str {
+	case "electronics":
+		return ProductTypeElectronics, nil
+	case "clothing":
+		return ProductTypeClothing, nil
+	case "shoes":
+		return ProductTypeShoes, nil
+	default:
+		return "", errors.New("invalid product type")
+	}
+}

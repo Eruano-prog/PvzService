@@ -1,6 +1,9 @@
 package models
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+	"github.com/google/uuid"
+)
 
 type User struct {
 	ID       uuid.UUID
@@ -15,3 +18,14 @@ const (
 	RoleEmployee  UserRole = "employee"
 	RoleModerator UserRole = "moderator"
 )
+
+func GetRoleFromString(role string) (UserRole, error) {
+	switch role {
+	case "employee":
+		return RoleEmployee, nil
+	case "moderator":
+		return RoleModerator, nil
+	default:
+		return "", fmt.Errorf("invalid role: %s", role)
+	}
+}
