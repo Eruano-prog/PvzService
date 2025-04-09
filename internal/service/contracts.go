@@ -1,0 +1,39 @@
+package service
+
+import (
+	"AvitoPvz/internal/domain/models"
+	"context"
+	"github.com/google/uuid"
+	"time"
+)
+
+type TokenService interface {
+	GenerateToken(userID uuid.UUID, role models.UserRole) (string, error)
+	VerifyToken(tokenString string) (userID uuid.UUID, role models.UserRole, err error)
+}
+
+type UserRepository interface {
+	InsertUser(ctx context.Context, user *models.User) error
+	FindUserByEmail(ctx context.Context, email string) (*models.User, error)
+}
+
+type PVZRepository interface {
+	InsertPVZ(ctx context.Context, pvz *models.PVZ) error
+
+	GetPagedPVZsFilteredByReceptionTime(ctx context.Context, fromTime, toTime *time.Time, fromNumber, toNumber int) ([]models.PVZ, error)
+}
+
+type ReceptionRepository interface {
+	InsertReception(ctx context.Context, reception *models.Reception) error
+	GetReceptionByPVZIDFilteredByReceptionTime(ctx context.Context, pvzID uuid.UUID, from, to *time.Time) ([]models.Reception, error)
+	GetActiveReceptionInPVZ(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error)
+
+	ChangeLastReceptionStatusByPVZID(ctx context.Context, pvzID uuid.UUID, newStatus models.ReceptionStatus) (*models.Reception, error)
+}
+
+type ProductRepository interface {
+	InsertProductIfReceptionNotClosed(ctx context.Context, product *models.Product, pvzID uuid.UUID) error
+	GetProductsByReceiptIDFilteredByTime(ctx context.Context, receiptID uuid.UUID, from, to *time.Time) ([]models.Product, error)
+
+	DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) error
+}
