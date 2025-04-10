@@ -1,9 +1,12 @@
 package postgres
 
 import (
+	"AvitoPvz/internal/domain"
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/service"
 	"context"
+	"database/sql"
+	"errors"
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 )
@@ -34,8 +37,11 @@ func (u User) InsertUser(ctx context.Context, user *models.User) error {
 func (u User) FindUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	var dbUser userDTO
 
-	err := u.db.SelectContext(ctx, dbUser, userFindByEmailQuery, email)
+	err := u.db.GetContext(ctx, &dbUser, userFindByEmailQuery, email)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrEntityNotFound
+		}
 		u.log.Error("Failed to find user by email", "error", err)
 		return nil, err
 	}

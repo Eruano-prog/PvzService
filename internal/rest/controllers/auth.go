@@ -4,6 +4,7 @@ import (
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 )
@@ -32,12 +33,14 @@ func (a AuthController) dummyLoginHandler(w http.ResponseWriter, r *http.Request
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&request); err != nil {
+		a.log.Debug("Error during dummy login:", err)
 		rest.WriteError(w, a.log, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
 
 	role, err := models.GetRoleFromString(string(request.Role))
 	if err != nil {
+		a.log.Debug("Error during dummy login:", err)
 		rest.WriteError(w, a.log, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
@@ -45,6 +48,7 @@ func (a AuthController) dummyLoginHandler(w http.ResponseWriter, r *http.Request
 	var openApiToken rest.Token
 	openApiToken, err = a.userService.DummyLogin(r.Context(), role)
 	if err != nil {
+		a.log.Debug("Error during dummy login:", err)
 		rest.WriteError(w, a.log, http.StatusBadRequest, http.StatusText(http.StatusBadRequest))
 		return
 	}
@@ -58,12 +62,21 @@ func (a AuthController) dummyLoginHandler(w http.ResponseWriter, r *http.Request
 func (a AuthController) registerHandler(w http.ResponseWriter, r *http.Request) {
 	var apiReq rest.PostRegisterJSONBody
 	if err := json.NewDecoder(r.Body).Decode(&apiReq); err != nil {
-		rest.WriteError(w, a.log, http.StatusBadRequest, "invalid request")
+		a.log.Debug("Error during registration:", err)
+		rest.WriteError(w, a.log, http.StatusBadRequest, fmt.Sprintf("invalid request. Error: %v", err))
 		return
 	}
 
-	createdUser, err := a.userService.Register(r.Context(), string(apiReq.Email), apiReq.Password, models.UserRole(apiReq.Role))
+	role, err := models.GetRoleFromString(string(apiReq.Role))
 	if err != nil {
+		a.log.Debug("Error during registration:", err)
+		rest.WriteError(w, a.log, http.StatusBadRequest, fmt.Sprintf("invalid request. Error: %v", err))
+		return
+	}
+
+	createdUser, err := a.userService.Register(r.Context(), string(apiReq.Email), apiReq.Password, role)
+	if err != nil {
+		a.log.Debug("Error during registration:", err)
 		rest.WriteError(w, a.log, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -83,13 +96,15 @@ func (a AuthController) registerHandler(w http.ResponseWriter, r *http.Request) 
 func (a AuthController) loginHandler(w http.ResponseWriter, r *http.Request) {
 	var apiReq rest.PostLoginJSONBody
 	if err := json.NewDecoder(r.Body).Decode(&apiReq); err != nil {
-		rest.WriteError(w, a.log, http.StatusBadRequest, "invalid request")
+		a.log.Debug("Error during dummy login:", err)
+		rest.WriteError(w, a.log, http.StatusBadRequest, fmt.Sprintf("invalid request. Error: %v", err))
 		return
 	}
 
 	var token rest.Token
 	token, err := a.userService.Login(r.Context(), string(apiReq.Email), apiReq.Password)
 	if err != nil {
+		a.log.Debug("Error during dummy login:", err)
 		rest.WriteError(w, a.log, http.StatusUnauthorized, "invalid credentials")
 		return
 	}

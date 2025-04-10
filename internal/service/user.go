@@ -22,7 +22,7 @@ func (u User) Register(ctx context.Context, email, password string, role models.
 	_, err = u.userRepository.FindUserByEmail(ctx, email)
 	if err == nil || !errors.Is(err, domain.ErrEntityNotFound) {
 		u.log.Debug("user already exists or error happened")
-		return nil, err
+		return nil, domain.ErrAlreadyExists
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -44,14 +44,14 @@ func (u User) Register(ctx context.Context, email, password string, role models.
 		return nil, err
 	}
 
-	return user, nil
+	return userToInsert, nil
 }
 
 func (u User) Login(ctx context.Context, email, password string) (token string, err error) {
 	user, err := u.userRepository.FindUserByEmail(ctx, email)
 
 	if err != nil {
-		u.log.Error("failed to find user by email", err)
+		u.log.Debug("failed to find user by email", err)
 		return "", err
 	}
 
