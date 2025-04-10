@@ -20,7 +20,6 @@ services:
       timeout: 10s
 
   app:
-    image: app:latest
     build:
       dockerfile: Dockerfile
     container_name: app
