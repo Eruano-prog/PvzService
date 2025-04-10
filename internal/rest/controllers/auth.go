@@ -22,9 +22,9 @@ func NewAuthController(log *slog.Logger, userService rest.UserService) *AuthCont
 }
 
 func (a AuthController) Register(mux *http.ServeMux) {
-	mux.HandleFunc("/dummyLogin", a.dummyLoginHandler)
-	mux.HandleFunc("/register", a.registerHandler)
-	mux.HandleFunc("/login", a.loginHandler)
+	mux.HandleFunc("POST /dummyLogin", a.dummyLoginHandler)
+	mux.HandleFunc("POST /register", a.registerHandler)
+	mux.HandleFunc("POST /login", a.loginHandler)
 }
 
 func (a AuthController) dummyLoginHandler(w http.ResponseWriter, r *http.Request) {
