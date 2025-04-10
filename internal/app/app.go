@@ -34,7 +34,7 @@ func Run() error {
 	tokenService := jwt.NewJWTService(log, cfg.TokenSecret)
 
 	//Repository
-	db, err := postgres.SetupDBConnection(log, cfg.Database.Address, cfg.Database.DBName, cfg.Database.Username, cfg.Database.Password)
+	db, err := postgres.SetupDBConnection(log, cfg.DBAddress)
 	if err != nil {
 		log.Error("error connecting to database")
 		return err

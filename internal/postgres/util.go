@@ -1,15 +1,14 @@
 package postgres
 
 import (
-	"fmt"
+	_ "github.com/jackc/pgx/v5/stdlib"
+
 	"github.com/jmoiron/sqlx"
 	"log/slog"
 )
 
-func SetupDBConnection(log *slog.Logger, address, database, username, password string) (*sqlx.DB, error) {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s/%s", username, password, address, database)
-
-	db, err := sqlx.Connect("postgres", dsn)
+func SetupDBConnection(log *slog.Logger, address string) (*sqlx.DB, error) {
+	db, err := sqlx.Connect("pgx", address)
 	if err != nil {
 		log.Error("Failed to connect to database", "error", err)
 		return nil, err

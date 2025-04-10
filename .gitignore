@@ -2,3 +2,5 @@
 .idea/
 
 configs/config.yaml
+
+.env
