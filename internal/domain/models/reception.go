@@ -1,6 +1,7 @@
 package models
 
 import (
+	"AvitoPvz/internal/domain"
 	"github.com/google/uuid"
 	"time"
 )
@@ -22,4 +23,15 @@ const (
 type ReceptionWithProducts struct {
 	Reception Reception
 	Products  []Product
+}
+
+func GetStatusFromString(status string) (ReceptionStatus, error) {
+	switch status {
+	case "in_progress":
+		return ReceptionStatusInProgress, nil
+	case "closed":
+		return ReceptionStatusClosed, nil
+	default:
+		return ReceptionStatus(""), domain.ErrUndefinedValue
+	}
 }

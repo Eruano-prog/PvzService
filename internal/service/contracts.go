@@ -28,12 +28,12 @@ type ReceptionRepository interface {
 	GetReceptionByPVZIDFilteredByReceptionTime(ctx context.Context, pvzID uuid.UUID, from, to *time.Time) ([]models.Reception, error)
 	GetActiveReceptionInPVZ(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error)
 
-	ChangeLastReceptionStatusByPVZID(ctx context.Context, pvzID uuid.UUID, newStatus models.ReceptionStatus) (*models.Reception, error)
+	ChangeActiveReceptionStatusByPVZID(ctx context.Context, pvzID uuid.UUID, newStatus models.ReceptionStatus) (*models.Reception, error)
 }
 
 type ProductRepository interface {
-	InsertProductIfReceptionNotClosed(ctx context.Context, product *models.Product, pvzID uuid.UUID) error
-	GetProductsByReceiptIDFilteredByTime(ctx context.Context, receiptID uuid.UUID, from, to *time.Time) ([]models.Product, error)
+	InsertProductIfReceptionNotClosed(ctx context.Context, product *models.Product) error
+	GetProductsByReceiptID(ctx context.Context, receiptID uuid.UUID) ([]models.Product, error)
 
 	DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) error
 }

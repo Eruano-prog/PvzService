@@ -1,7 +1,7 @@
 package models
 
 import (
-	"errors"
+	"AvitoPvz/internal/domain"
 	"github.com/google/uuid"
 	"time"
 )
@@ -30,6 +30,6 @@ func GetProductTypeFromString(str string) (ProductType, error) {
 	case "shoes":
 		return ProductTypeShoes, nil
 	default:
-		return "", errors.New("invalid product type")
+		return "", domain.ErrUndefinedValue
 	}
 }

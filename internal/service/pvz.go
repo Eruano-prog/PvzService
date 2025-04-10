@@ -34,10 +34,11 @@ func (p PVZ) CreatePVZ(ctx context.Context, city string) (*models.PVZ, error) {
 }
 
 // TODO: подумать о многопоточке здесь
+// TODO: Solve N+M problem
 func (p PVZ) GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time.Time, page, limit int) ([]models.PVZWithReceptions, error) {
-	firstElem, lastElem := (page-1)*limit, page*limit
+	firstElem := (page - 1) * limit
 
-	pvzs, err := p.pvzRepository.GetPagedPVZsFilteredByReceptionTime(ctx, startDate, endDate, firstElem, lastElem)
+	pvzs, err := p.pvzRepository.GetPagedPVZsFilteredByReceptionTime(ctx, startDate, endDate, firstElem, limit)
 	if err != nil {
 		p.log.Error("Error getting pvzs", "err", err)
 		return nil, err
@@ -53,7 +54,7 @@ func (p PVZ) GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time
 
 		receptionsWithProducts := make([]models.ReceptionWithProducts, 0, len(receptions))
 		for _, reception := range receptions {
-			products, err := p.productRepository.GetProductsByReceiptIDFilteredByTime(ctx, reception.ID, startDate, endDate)
+			products, err := p.productRepository.GetProductsByReceiptID(ctx, reception.ID)
 			if err != nil {
 				p.log.Error("Error getting products", "err", err)
 				continue
@@ -74,7 +75,7 @@ func (p PVZ) GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time
 }
 
 func (p PVZ) CloseLastReception(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error) {
-	reception, err := p.receptionRepository.ChangeLastReceptionStatusByPVZID(ctx, pvzID, models.ReceptionStatusClosed)
+	reception, err := p.receptionRepository.ChangeActiveReceptionStatusByPVZID(ctx, pvzID, models.ReceptionStatusClosed)
 	if err != nil {
 		p.log.Debug("Error closing last reception", "err", err)
 		return nil, err

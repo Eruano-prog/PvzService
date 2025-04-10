@@ -29,6 +29,7 @@ func (p *PVZController) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /pvz/{pvzId}/delete_last_product", p.deleteLastProductHandler)
 }
 
+// TODO: city validation
 func (p *PVZController) createPVZHandler(w http.ResponseWriter, r *http.Request) {
 	var req rest.PVZ
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

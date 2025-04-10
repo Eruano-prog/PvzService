@@ -1,7 +1,7 @@
 package models
 
 import (
-	"fmt"
+	"AvitoPvz/internal/domain"
 	"github.com/google/uuid"
 )
 
@@ -26,6 +26,6 @@ func GetRoleFromString(role string) (UserRole, error) {
 	case "moderator":
 		return RoleModerator, nil
 	default:
-		return "", fmt.Errorf("invalid role: %s", role)
+		return "", domain.ErrUndefinedValue
 	}
 }

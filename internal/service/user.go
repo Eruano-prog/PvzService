@@ -20,7 +20,7 @@ type User struct {
 
 func (u User) Register(ctx context.Context, email, password string, role models.UserRole) (user *models.User, err error) {
 	_, err = u.userRepository.FindUserByEmail(ctx, email)
-	if err == nil || !errors.Is(err, domain.ErrUserNotFound) {
+	if err == nil || !errors.Is(err, domain.ErrEntityNotFound) {
 		u.log.Debug("user already exists or error happened")
 		return nil, err
 	}

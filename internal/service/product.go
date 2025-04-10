@@ -30,7 +30,7 @@ func (p Product) AddProduct(ctx context.Context, productType models.ProductType,
 		DateTime:    time.Now(),
 	}
 
-	err = p.productRepository.InsertProductIfReceptionNotClosed(ctx, product, pvzID)
+	err = p.productRepository.InsertProductIfReceptionNotClosed(ctx, product)
 	if err != nil {
 		p.log.Info("Failed to insert product")
 		return nil, err
