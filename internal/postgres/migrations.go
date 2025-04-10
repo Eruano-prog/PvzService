@@ -15,7 +15,7 @@ var migrationFiles embed.FS
 
 func Migrate(log *slog.Logger, db *sqlx.DB) error {
 	log.Debug("running migration")
-	files, err := iofs.New(migrationFiles, "migrations") // get migrations from
+	files, err := iofs.New(migrationFiles, "sql/migrations") // get migrations from
 	if err != nil {
 		return err
 	}

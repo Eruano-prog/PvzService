@@ -8,7 +8,7 @@ import (
 )
 
 type HTTPConfig struct {
-	Address string        `yaml:"address" env:"HTTP_ADDRESS" env-default:"localhost:8080"`
+	Address string        `yaml:"address" env:"HTTP_ADDRESS" env-default:":8080"`
 	Timeout time.Duration `yaml:"timeout" env:"HTTP_TIMEOUT" env-default:"5s"`
 }
 

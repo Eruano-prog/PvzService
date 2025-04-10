@@ -40,6 +40,12 @@ func Run() error {
 		return err
 	}
 
+	err = postgres.Migrate(log, db)
+	if err != nil {
+		log.Error("error migrating database")
+		return err
+	}
+
 	userRepository := postgres.NewUserRepo(log, db)
 	pvzRepository := postgres.NewPVZRepo(log, db)
 	receptionRepository := postgres.NewReceptionRepo(log, db)
@@ -88,6 +94,7 @@ func Run() error {
 		}
 	}
 
+	log.Debug("server closed")
 	return nil
 }
 
