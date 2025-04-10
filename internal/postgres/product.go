@@ -91,7 +91,7 @@ func (p Product) DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) 
 	}
 }
 
-func NewProduct(log *slog.Logger, db *sqlx.DB) service.ProductRepository {
+func NewProductRepo(log *slog.Logger, db *sqlx.DB) service.ProductRepository {
 	return &Product{
 		log: log,
 		db:  db,

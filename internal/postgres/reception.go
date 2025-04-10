@@ -147,7 +147,7 @@ func (r Reception) ChangeActiveReceptionStatusByPVZID(ctx context.Context, pvzID
 	}, nil
 }
 
-func New(log *slog.Logger, db *sqlx.DB) service.ReceptionRepository {
+func NewReceptionRepo(log *slog.Logger, db *sqlx.DB) service.ReceptionRepository {
 	return &Reception{
 		log: log,
 		db:  db,

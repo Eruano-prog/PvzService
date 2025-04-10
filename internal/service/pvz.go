@@ -94,7 +94,7 @@ func (p PVZ) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) error {
 	return nil
 }
 
-func NewPVZ(log *slog.Logger, pvzRepository PVZRepository, receptionRepository ReceptionRepository, productRepository ProductRepository) rest.PVZService {
+func NewPVZService(log *slog.Logger, pvzRepository PVZRepository, receptionRepository ReceptionRepository, productRepository ProductRepository) rest.PVZService {
 	return &PVZ{
 		log:                 log,
 		pvzRepository:       pvzRepository,

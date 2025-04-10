@@ -49,7 +49,7 @@ func (u User) FindUserByEmail(ctx context.Context, email string) (*models.User, 
 	return user, nil
 }
 
-func NewUser(log *slog.Logger, db *sqlx.DB) service.UserRepository {
+func NewUserRepo(log *slog.Logger, db *sqlx.DB) service.UserRepository {
 	return &User{
 		log: log,
 		db:  db,

@@ -39,7 +39,7 @@ func (p Product) AddProduct(ctx context.Context, productType models.ProductType,
 	return product, nil
 }
 
-func NewProduct(log *slog.Logger, productRepository ProductRepository, receptionRepository ReceptionRepository) rest.ProductService {
+func NewProductService(log *slog.Logger, productRepository ProductRepository, receptionRepository ReceptionRepository) rest.ProductService {
 	return &Product{
 		log:                 log,
 		productRepository:   productRepository,

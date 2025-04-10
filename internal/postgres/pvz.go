@@ -64,7 +64,7 @@ func (p PVZ) GetPagedPVZsFilteredByReceptionTime(ctx context.Context, fromTime, 
 	return result, nil
 }
 
-func NewPVZ(log *slog.Logger, db *sqlx.DB) service.PVZRepository {
+func NewPVZRepo(log *slog.Logger, db *sqlx.DB) service.PVZRepository {
 	return &PVZ{
 		log: log,
 		db:  db,

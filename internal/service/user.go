@@ -78,9 +78,10 @@ func (u User) DummyLogin(ctx context.Context, role models.UserRole) (token strin
 	return token, nil
 }
 
-func NewUserService(log *slog.Logger, tokenService TokenService) rest.UserService {
+func NewUserService(log *slog.Logger, tokenService TokenService, userRepository UserRepository) rest.UserService {
 	return &User{
-		log:   log,
-		token: tokenService,
+		log:            log,
+		token:          tokenService,
+		userRepository: userRepository,
 	}
 }

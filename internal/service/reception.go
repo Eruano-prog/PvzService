@@ -31,7 +31,7 @@ func (r Reception) CreateReception(ctx context.Context, pvzID uuid.UUID) (*model
 	return reception, nil
 }
 
-func NewReception(log *slog.Logger, receptionRepo ReceptionRepository) rest.ReceptionService {
+func NewReceptionService(log *slog.Logger, receptionRepo ReceptionRepository) rest.ReceptionService {
 	return &Reception{
 		log:                 log,
 		receptionRepository: receptionRepo,
