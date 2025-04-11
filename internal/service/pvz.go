@@ -27,8 +27,6 @@ func (p PVZ) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error
 	return pvz, nil
 }
 
-// TODO: подумать о многопоточке здесь
-// TODO: Solve N+M problem
 func (p PVZ) GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time.Time, page, limit int) ([]models.PVZWithReceptions, error) {
 	firstElem := (page - 1) * limit
 
