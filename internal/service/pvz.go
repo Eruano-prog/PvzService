@@ -38,34 +38,7 @@ func (p PVZ) GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time
 		return nil, err
 	}
 
-	results := make([]models.PVZWithReceptions, 0, len(pvzs))
-	for _, pvz := range pvzs {
-		receptions, err := p.receptionRepository.GetReceptionByPVZIDFilteredByReceptionTime(ctx, pvz.ID, startDate, endDate)
-		if err != nil {
-			p.log.Error("Error getting receptions", "err", err)
-			continue
-		}
-
-		receptionsWithProducts := make([]models.ReceptionWithProducts, 0, len(receptions))
-		for _, reception := range receptions {
-			products, err := p.productRepository.GetProductsByReceiptID(ctx, reception.ID)
-			if err != nil {
-				p.log.Error("Error getting products", "err", err)
-				continue
-			}
-			receptionsWithProducts = append(receptionsWithProducts, models.ReceptionWithProducts{
-				Reception: reception,
-				Products:  products,
-			})
-		}
-
-		results = append(results, models.PVZWithReceptions{
-			PVZ:        pvz,
-			Receptions: receptionsWithProducts,
-		})
-	}
-
-	return results, nil
+	return pvzs, nil
 }
 
 func (p PVZ) CloseLastReception(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error) {
