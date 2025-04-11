@@ -17,9 +17,9 @@ type PVZ struct {
 
 func (p PVZ) InsertPVZ(ctx context.Context, pvz *models.PVZ) error {
 	dbPVZ := pvzDTO{
-		ID:              pvz.ID,
-		City:            pvz.City,
-		RegitrationTime: pvz.RegistrationDate,
+		ID:               pvz.ID,
+		City:             string(pvz.City),
+		RegistrationTime: pvz.RegistrationDate,
 	}
 
 	_, err := p.db.NamedExecContext(ctx, pvzInsertQuery, dbPVZ)
@@ -54,10 +54,16 @@ func (p PVZ) GetPagedPVZsFilteredByReceptionTime(ctx context.Context, fromTime, 
 
 	result := make([]models.PVZ, len(resultDTO))
 	for i, dto := range resultDTO {
+		city, err := models.GetCityFromString(dto.City)
+		if err != nil {
+			p.log.Error("Error getting city", "error", err)
+			return nil, err
+		}
+
 		result[i] = models.PVZ{
 			ID:               dto.ID,
-			City:             dto.City,
-			RegistrationDate: dto.RegitrationTime,
+			City:             city,
+			RegistrationDate: dto.RegistrationTime,
 		}
 	}
 

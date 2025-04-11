@@ -29,9 +29,9 @@ func (u userDTO) toModel() (*models.User, error) {
 }
 
 type pvzDTO struct {
-	ID              uuid.UUID `db:"id"`
-	City            string    `db:"city"`
-	RegitrationTime time.Time `db:"regitration_time"`
+	ID               uuid.UUID `db:"id"`
+	City             string    `db:"city"`
+	RegistrationTime time.Time `db:"registration_time"`
 }
 
 type receptionDTO struct {

@@ -17,13 +17,7 @@ type PVZ struct {
 	productRepository   ProductRepository
 }
 
-func (p PVZ) CreatePVZ(ctx context.Context, city string) (*models.PVZ, error) {
-	pvz := &models.PVZ{
-		ID:               uuid.New(),
-		City:             city,
-		RegistrationDate: time.Now(),
-	}
-
+func (p PVZ) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error) {
 	err := p.pvzRepository.InsertPVZ(ctx, pvz)
 	if err != nil {
 		p.log.Error("Error inserting pvz", "err", err)

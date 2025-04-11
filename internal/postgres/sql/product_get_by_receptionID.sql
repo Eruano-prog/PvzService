@@ -1,3 +1,3 @@
 SELECT *
 FROM productions
-WHERE reception_id = :reception_id
+WHERE reception_id = $1

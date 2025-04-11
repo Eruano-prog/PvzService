@@ -29,7 +29,7 @@ func (p Product) InsertProductIfReceptionNotClosed(ctx context.Context, product 
 
 	q, args, err := p.db.BindNamed(productInsertQuery, params)
 	if err != nil {
-		p.log.Error("Error binding params tto query")
+		p.log.Error("Error binding params to query")
 		return err
 	}
 
@@ -48,13 +48,9 @@ func (p Product) InsertProductIfReceptionNotClosed(ctx context.Context, product 
 	return nil
 }
 
-func (p Product) GetProductsByReceiptID(ctx context.Context, receiptID uuid.UUID) ([]models.Product, error) {
-	params := map[string]interface{}{
-		"reception_id": receiptID,
-	}
-
+func (p Product) GetProductsByReceiptID(ctx context.Context, receptionID uuid.UUID) ([]models.Product, error) {
 	var productDTOs []productDTO
-	err := p.db.SelectContext(ctx, &productDTOs, productFindByReceptionIDQuery, params)
+	err := p.db.SelectContext(ctx, &productDTOs, productFindByReceptionIDQuery, receptionID)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		p.log.Error("Error selecting products by reception id query")
 		return nil, err
@@ -78,15 +74,23 @@ func (p Product) DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) 
 		"status": string(models.ReceptionStatusInProgress),
 	}
 
+	q, args, err := p.db.BindNamed(productDeleteByPvzIDQuery, params)
+	if err != nil {
+		p.log.Error("Error binding params to query", "params", params, "err", err)
+		return err
+	}
+
 	var deletedID uuid.UUID
-	err := p.db.QueryRowxContext(ctx, productDeleteByPvzIDQuery, params).Scan(&deletedID)
+	err = p.db.GetContext(ctx, &deletedID, q, args...)
 
 	switch {
 	case err == nil:
 		return nil
 	case errors.Is(err, sql.ErrNoRows):
+		p.log.Debug("No product was deleted")
 		return domain.ErrEntityNotFound
 	default:
+		p.log.Error("Error executing delete query", "args", args, "err", err)
 		return err
 	}
 }

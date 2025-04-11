@@ -15,9 +15,9 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      retries: 5
-      timeout: 10s
+      interval: 2s
+      retries: 10
+      timeout: 5s
 
   app:
     build:

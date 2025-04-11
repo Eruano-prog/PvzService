@@ -8,4 +8,4 @@ INSERT INTO productions (id, reception_id, type, datetime)
 SELECT :product_id, :reception_id, :type, :datetime
 FROM check_reception
 WHERE EXISTS (SELECT 1 FROM check_reception)
-RETURNING *;
+RETURNING id;

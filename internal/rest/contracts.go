@@ -14,7 +14,7 @@ type UserService interface {
 }
 
 type PVZService interface {
-	CreatePVZ(ctx context.Context, city string) (*models.PVZ, error)
+	CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error)
 	GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time.Time, page, limit int) ([]models.PVZWithReceptions, error)
 	CloseLastReception(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error)
 	DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) error

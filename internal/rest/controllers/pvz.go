@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
 	"encoding/json"
 	"github.com/google/uuid"
@@ -29,15 +30,34 @@ func (p *PVZController) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /pvz/{pvzId}/delete_last_product", p.deleteLastProductHandler)
 }
 
-// TODO: city validation
 func (p *PVZController) createPVZHandler(w http.ResponseWriter, r *http.Request) {
 	var req rest.PVZ
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		p.log.Debug("Error decoding create pvz request", "error", err)
 		rest.WriteError(w, p.log, http.StatusBadRequest, "invalid request")
 		return
 	}
 
-	createdPVZ, err := p.pvzService.CreatePVZ(r.Context(), string(req.City))
+	city, err := rest.CityToModel(req.City)
+	if err != nil {
+		rest.WriteError(w, p.log, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	pvz := models.PVZ{City: city}
+	if req.Id == nil {
+		pvz.ID = uuid.New()
+	} else {
+		pvz.ID = *req.Id
+	}
+
+	if req.RegistrationDate == nil {
+		pvz.RegistrationDate = time.Time{}
+	} else {
+		pvz.RegistrationDate = *req.RegistrationDate
+	}
+
+	createdPVZ, err := p.pvzService.CreatePVZ(r.Context(), &pvz)
 	if err != nil {
 		rest.WriteError(w, p.log, http.StatusBadRequest, err.Error())
 		return
