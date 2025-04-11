@@ -28,7 +28,7 @@ func (p PVZ) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error
 }
 
 func (p PVZ) GetPVZsWithReceptions(ctx context.Context, startDate, endDate *time.Time, page, limit int) ([]models.PVZWithReceptions, error) {
-	firstElem := (page - 1) * limit
+	firstElem := min((page-1)*limit, 0)
 
 	pvzs, err := p.pvzRepository.GetPagedPVZsFilteredByReceptionTime(ctx, startDate, endDate, firstElem, limit)
 	if err != nil {

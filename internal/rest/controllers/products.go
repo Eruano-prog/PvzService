@@ -3,6 +3,7 @@ package controllers
 import (
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
+	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -20,8 +21,8 @@ func NewProductController(log *slog.Logger, productService rest.ProductService) 
 	}
 }
 
-func (p *ProductController) Register(mux *http.ServeMux) {
-	mux.HandleFunc("POST /products", p.addProductHandler)
+func (p *ProductController) Register(mux *http.ServeMux, tokenVerifier middleware.Verifier) {
+	mux.Handle("POST /products", middleware.AuthMiddleware(http.HandlerFunc(p.addProductHandler), tokenVerifier, p.log, middleware.EmployeeOnly))
 }
 
 func (p *ProductController) addProductHandler(w http.ResponseWriter, req *http.Request) {

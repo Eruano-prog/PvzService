@@ -31,7 +31,7 @@ func Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	tokenService := jwt.NewJWTService(log, cfg.TokenSecret)
+	tokenService := jwt.NewJWTService(log, cfg.TokenSecret, cfg.TokenTTL)
 
 	//Repository
 	db, err := postgres.SetupDBConnection(log, cfg.DBAddress)
@@ -67,9 +67,9 @@ func Run() error {
 	mux := http.NewServeMux()
 
 	authController.Register(mux)
-	pvzController.Register(mux)
-	receptionController.Register(mux)
-	productController.Register(mux)
+	pvzController.Register(mux, tokenService)
+	receptionController.Register(mux, tokenService)
+	productController.Register(mux, tokenService)
 
 	server := http.Server{
 		Addr:        cfg.HTTPConfig.Address,

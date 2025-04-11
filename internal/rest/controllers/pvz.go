@@ -3,6 +3,7 @@ package controllers
 import (
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
+	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
 	"github.com/google/uuid"
 	"log/slog"
@@ -23,11 +24,11 @@ func NewPVZController(log *slog.Logger, pvzService rest.PVZService) *PVZControll
 	}
 }
 
-func (p *PVZController) Register(mux *http.ServeMux) {
-	mux.HandleFunc("POST /pvz", p.createPVZHandler)
-	mux.HandleFunc("GET /pvz", p.getPVZsHandler)
-	mux.HandleFunc("POST /pvz/{pvzId}/close_last_reception", p.closeLastReceptionHandler)
-	mux.HandleFunc("POST /pvz/{pvzId}/delete_last_product", p.deleteLastProductHandler)
+func (p *PVZController) Register(mux *http.ServeMux, tokenVerifier middleware.Verifier) {
+	mux.Handle("POST /pvz", middleware.AuthMiddleware(http.HandlerFunc(p.createPVZHandler), tokenVerifier, p.log, middleware.ModeratorOnly))
+	mux.Handle("GET /pvz", middleware.AuthMiddleware(http.HandlerFunc(p.getPVZsHandler), tokenVerifier, p.log, middleware.EmployeeAndModerator))
+	mux.Handle("POST /pvz/{pvzId}/close_last_reception", middleware.AuthMiddleware(http.HandlerFunc(p.closeLastReceptionHandler), tokenVerifier, p.log, middleware.EmployeeAndModerator))
+	mux.Handle("POST /pvz/{pvzId}/delete_last_product", middleware.AuthMiddleware(http.HandlerFunc(p.deleteLastProductHandler), tokenVerifier, p.log, middleware.EmployeeOnly))
 }
 
 func (p *PVZController) createPVZHandler(w http.ResponseWriter, r *http.Request) {

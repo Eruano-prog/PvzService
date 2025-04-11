@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"AvitoPvz/internal/rest"
+	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -19,8 +20,8 @@ func NewReceptionController(log *slog.Logger, receptionService rest.ReceptionSer
 	}
 }
 
-func (r *ReceptionController) Register(mux *http.ServeMux) {
-	mux.HandleFunc("POST /receptions", r.createReceptionHandler)
+func (r *ReceptionController) Register(mux *http.ServeMux, tokenVerifier middleware.Verifier) {
+	mux.Handle("POST /receptions", middleware.AuthMiddleware(http.HandlerFunc(r.createReceptionHandler), tokenVerifier, r.log, middleware.EmployeeOnly))
 }
 
 func (r *ReceptionController) createReceptionHandler(w http.ResponseWriter, req *http.Request) {

@@ -8,24 +8,27 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"log/slog"
+	"time"
 )
 
 type Service struct {
-	log    *slog.Logger
-	secret []byte
+	log        *slog.Logger
+	secret     []byte
+	expiration time.Duration
 }
 
 func (s Service) GenerateToken(userID uuid.UUID, role models.UserRole) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userID": userID.String(),
 		"role":   role,
+		"exp":    time.Now().Add(s.expiration).Unix(),
 	})
 
 	return token.SignedString(s.secret)
 }
 
 func (s Service) VerifyToken(tokenString string) (userID uuid.UUID, role models.UserRole, err error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -38,8 +41,8 @@ func (s Service) VerifyToken(tokenString string) (userID uuid.UUID, role models.
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
-		s.log.Error("Invalid token claims")
-		return uuid.Nil, "", errors.New("invalid token claims")
+		s.log.Debug("Invalid token claims or token expired")
+		return uuid.Nil, "", errors.New("invalid token or expired")
 	}
 
 	userIDStr, ok := claims["userID"].(string)
@@ -69,9 +72,11 @@ func (s Service) VerifyToken(tokenString string) (userID uuid.UUID, role models.
 	return parsedUUID, role, nil
 }
 
-func NewJWTService(l *slog.Logger, secret string) service.TokenService {
+func NewJWTService(l *slog.Logger, secret string, expiration time.Duration) service.TokenService {
+	l.Debug("NewJWTService", expiration)
 	return &Service{
-		log:    l,
-		secret: []byte(secret),
+		log:        l,
+		secret:     []byte(secret),
+		expiration: expiration,
 	}
 }
