@@ -27,7 +27,7 @@ func (u User) Register(ctx context.Context, email, password string, role models.
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		u.log.Error("failed to hash password", err)
+		u.log.Error("failed to hash password", "Error", err)
 		return nil, err
 	}
 
@@ -40,7 +40,7 @@ func (u User) Register(ctx context.Context, email, password string, role models.
 
 	err = u.userRepository.InsertUser(ctx, userToInsert)
 	if err != nil {
-		u.log.Error("failed to insert user", err)
+		u.log.Error("failed to insert user", "Error", err)
 		return nil, err
 	}
 
@@ -51,19 +51,19 @@ func (u User) Login(ctx context.Context, email, password string) (token string, 
 	user, err := u.userRepository.FindUserByEmail(ctx, email)
 
 	if err != nil {
-		u.log.Debug("failed to find user by email", err)
+		u.log.Debug("failed to find user by email", "Error", err)
 		return "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		u.log.Debug("failed to compare password", err)
+		u.log.Debug("failed to compare password", "Error", err)
 		return "", domain.ErrUnauthorized
 	}
 
 	token, err = u.token.GenerateToken(&models.Token{UserID: user.ID, UserRole: user.Role})
 	if err != nil {
-		u.log.Error("failed to generate token", err)
+		u.log.Error("failed to generate token", "Error", err)
 		return "", err
 	}
 	return token, nil

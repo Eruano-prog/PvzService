@@ -76,7 +76,6 @@ func (s Service) VerifyToken(tokenString string) (tokenInfo *models.Token, err e
 }
 
 func NewJWTService(l *slog.Logger, secret string, expiration time.Duration) service.TokenService {
-	l.Debug("NewJWTService", expiration)
 	return &Service{
 		log:        l,
 		secret:     []byte(secret),
