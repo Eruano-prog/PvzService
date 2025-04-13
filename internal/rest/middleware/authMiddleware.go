@@ -4,7 +4,6 @@ import (
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
 	"context"
-	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -18,7 +17,7 @@ var (
 )
 
 type Verifier interface {
-	VerifyToken(tokenString string) (userID uuid.UUID, role models.UserRole, err error)
+	VerifyToken(tokenString string) (tokenInfo *models.Token, err error)
 }
 
 func AuthMiddleware(next http.Handler, verifier Verifier, log *slog.Logger, allowedRoles []models.UserRole) http.Handler {
@@ -26,19 +25,19 @@ func AuthMiddleware(next http.Handler, verifier Verifier, log *slog.Logger, allo
 		token := r.Header.Get("Authorization")
 		token = strings.TrimPrefix(token, "Bearer ")
 
-		id, role, err := verifier.VerifyToken(token)
+		tokenInfo, err := verifier.VerifyToken(token)
 		if err != nil {
 			log.Debug("Failed to verify token", "err", err)
 			rest.WriteError(w, log, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
 
-		if !slices.Contains(allowedRoles, role) {
-			log.Debug("role not in allowed", "role:", role, "allowed:", allowedRoles)
+		if !slices.Contains(allowedRoles, tokenInfo.UserRole) {
+			log.Debug("role not in allowed", "role:", tokenInfo.UserRole, "allowed:", allowedRoles)
 			rest.WriteError(w, log, http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userID", id)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userID", tokenInfo.UserID)))
 	})
 }

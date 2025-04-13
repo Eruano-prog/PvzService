@@ -8,8 +8,8 @@ import (
 )
 
 type TokenService interface {
-	GenerateToken(userID uuid.UUID, role models.UserRole) (string, error)
-	VerifyToken(tokenString string) (userID uuid.UUID, role models.UserRole, err error)
+	GenerateToken(token *models.Token) (string, error)
+	VerifyToken(tokenString string) (token *models.Token, err error)
 }
 
 type UserRepository interface {

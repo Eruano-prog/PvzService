@@ -61,7 +61,7 @@ func (u User) Login(ctx context.Context, email, password string) (token string, 
 		return "", domain.ErrUnauthorized
 	}
 
-	token, err = u.token.GenerateToken(user.ID, user.Role)
+	token, err = u.token.GenerateToken(&models.Token{UserID: user.ID, UserRole: user.Role})
 	if err != nil {
 		u.log.Error("failed to generate token", err)
 		return "", err
@@ -70,7 +70,7 @@ func (u User) Login(ctx context.Context, email, password string) (token string, 
 }
 
 func (u User) DummyLogin(ctx context.Context, role models.UserRole) (token string, err error) {
-	token, err = u.token.GenerateToken(uuid.Nil, role)
+	token, err = u.token.GenerateToken(&models.Token{UserID: uuid.Nil, UserRole: role})
 	if err != nil {
 		return "", err
 	}
