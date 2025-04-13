@@ -25,6 +25,11 @@ func AuthMiddleware(next http.Handler, verifier Verifier, log *slog.Logger, allo
 		token := r.Header.Get("Authorization")
 		token = strings.TrimPrefix(token, "Bearer ")
 
+		if token == "" {
+			rest.WriteError(w, log, http.StatusUnauthorized, "no token provided")
+			return
+		}
+
 		tokenInfo, err := verifier.VerifyToken(token)
 		if err != nil {
 			log.Debug("Failed to verify token", "err", err)
