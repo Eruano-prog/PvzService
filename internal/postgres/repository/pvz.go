@@ -1,7 +1,9 @@
-package postgres
+package repository
 
 import (
 	"AvitoPvz/internal/domain/models"
+	"AvitoPvz/internal/postgres"
+	"AvitoPvz/internal/postgres/dto"
 	"AvitoPvz/internal/service"
 	"context"
 	"encoding/json"
@@ -21,7 +23,7 @@ type PVZ struct {
 }
 
 type dbResponse struct {
-	pvzDTO
+	dto.PvzDTO
 	ReceptionsJSON []byte `db:"receptions_with_products"`
 }
 
@@ -45,13 +47,13 @@ type receptionWithProductsJSON struct {
 }
 
 func (p PVZ) InsertPVZ(ctx context.Context, pvz *models.PVZ) error {
-	dbPVZ := pvzDTO{
+	dbPVZ := dto.PvzDTO{
 		ID:               pvz.ID,
 		City:             string(pvz.City),
 		RegistrationTime: pvz.RegistrationDate,
 	}
 
-	if _, err := p.db.NamedExecContext(ctx, pvzInsertQuery, dbPVZ); err != nil {
+	if _, err := p.db.NamedExecContext(ctx, postgres.PvzInsertQuery, dbPVZ); err != nil {
 		p.log.Error("Error inserting PVZ", "error", err)
 		return err
 	}
@@ -71,7 +73,7 @@ func (p PVZ) GetPagedPVZsFilteredByReceptionTime(
 		"limit":     limit,
 	}
 
-	q, args, err := p.db.BindNamed(pvzGetFilteredByReceptionTime, params)
+	q, args, err := p.db.BindNamed(postgres.PvzGetFilteredByReceptionTime, params)
 	if err != nil {
 		p.log.Error("Error binding named params", "error", err)
 		return nil, err

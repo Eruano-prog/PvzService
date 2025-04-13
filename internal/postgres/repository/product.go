@@ -1,8 +1,10 @@
-package postgres
+package repository
 
 import (
 	"AvitoPvz/internal/domain"
 	"AvitoPvz/internal/domain/models"
+	"AvitoPvz/internal/postgres"
+	"AvitoPvz/internal/postgres/dto"
 	"AvitoPvz/internal/service"
 	"context"
 	"database/sql"
@@ -27,7 +29,7 @@ func (p Product) InsertProductIfReceptionNotClosed(ctx context.Context, product 
 		"datetime":         product.DateTime,
 	}
 
-	q, args, err := p.db.BindNamed(productInsertQuery, params)
+	q, args, err := p.db.BindNamed(postgres.ProductInsertQuery, params)
 	if err != nil {
 		p.log.Error("Error binding params to query")
 		return err
@@ -49,16 +51,16 @@ func (p Product) InsertProductIfReceptionNotClosed(ctx context.Context, product 
 }
 
 func (p Product) GetProductsByReceiptID(ctx context.Context, receptionID uuid.UUID) ([]models.Product, error) {
-	var productDTOs []productDTO
-	err := p.db.SelectContext(ctx, &productDTOs, productFindByReceptionIDQuery, receptionID)
+	var productDTOs []dto.ProductDTO
+	err := p.db.SelectContext(ctx, &productDTOs, postgres.ProductFindByReceptionIDQuery, receptionID)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		p.log.Error("Error selecting products by reception id query")
 		return nil, err
 	}
 
 	result := make([]models.Product, 0, len(productDTOs))
-	for _, dto := range productDTOs {
-		product, err := dto.toModel()
+	for _, productDTO := range productDTOs {
+		product, err := productDTO.ToModel()
 		if err != nil {
 			return nil, err
 		}
@@ -74,7 +76,7 @@ func (p Product) DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) 
 		"status": string(models.ReceptionStatusInProgress),
 	}
 
-	q, args, err := p.db.BindNamed(productDeleteByPvzIDQuery, params)
+	q, args, err := p.db.BindNamed(postgres.ProductDeleteByPvzIDQuery, params)
 	if err != nil {
 		p.log.Error("Error binding params to query", "params", params, "err", err)
 		return err

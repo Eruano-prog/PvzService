@@ -1,8 +1,10 @@
-package postgres
+package repository
 
 import (
 	"AvitoPvz/internal/domain"
 	"AvitoPvz/internal/domain/models"
+	"AvitoPvz/internal/postgres"
+	"AvitoPvz/internal/postgres/dto"
 	"AvitoPvz/internal/service"
 	"context"
 	"github.com/google/uuid"
@@ -18,14 +20,14 @@ type Reception struct {
 }
 
 func (r Reception) InsertReception(ctx context.Context, reception *models.Reception) error {
-	dbReception := receptionDTO{
+	dbReception := dto.ReceptionDTO{
 		ID:       reception.ID,
 		PVZID:    reception.PVZID,
 		DateTime: reception.DateTime,
 		Status:   string(reception.Status),
 	}
 
-	_, err := r.db.NamedExecContext(ctx, receptionInsertQuery, dbReception)
+	_, err := r.db.NamedExecContext(ctx, postgres.ReceptionInsertQuery, dbReception)
 	if err != nil {
 		r.log.Error("Error inserting reception", "error", err)
 		return err
@@ -41,13 +43,13 @@ func (r Reception) GetReceptionByPVZIDFilteredByReceptionTime(ctx context.Contex
 		"to_time":   to,
 	}
 
-	q, args, err := r.db.BindNamed(receptionFindByPvzAndTimeQuery, params)
+	q, args, err := r.db.BindNamed(postgres.ReceptionFindByPvzAndTimeQuery, params)
 	if err != nil {
 		r.log.Error("Error binding reception get query", "error", err)
 		return nil, err
 	}
 
-	var resultsDTO []receptionDTO
+	var resultsDTO []dto.ReceptionDTO
 	err = r.db.SelectContext(ctx, &resultsDTO, q, args...)
 	if err != nil {
 		r.log.Error("Error binding reception get query", "error", err)
@@ -78,13 +80,13 @@ func (r Reception) GetActiveReceptionInPVZ(ctx context.Context, pvzID uuid.UUID)
 		"pvz_id": pvzID,
 		"status": string(models.ReceptionStatusInProgress),
 	}
-	q, args, err := r.db.BindNamed(receptionFindByStatusPvzQuery, params)
+	q, args, err := r.db.BindNamed(postgres.ReceptionFindByStatusPvzQuery, params)
 	if err != nil {
 		r.log.Error("Error binding reception get active query", "error", err)
 		return nil, err
 	}
 
-	var resultDTO receptionDTO
+	var resultDTO dto.ReceptionDTO
 	err = r.db.GetContext(ctx, &resultDTO, q, args...)
 	if err != nil {
 		r.log.Error("Error binding reception get active query", "error", err)
@@ -113,13 +115,13 @@ func (r Reception) ChangeActiveReceptionStatusByPVZID(ctx context.Context, pvzID
 		"last_status": string(models.ReceptionStatusInProgress),
 	}
 
-	q, args, err := r.db.BindNamed(receptionUpdateByStatusAndPvzQuery, params)
+	q, args, err := r.db.BindNamed(postgres.ReceptionUpdateByStatusAndPvzQuery, params)
 	if err != nil {
 		r.log.Error("Error binding reception change active query", "error", err)
 		return nil, err
 	}
 
-	var resultDTO []receptionDTO
+	var resultDTO []dto.ReceptionDTO
 	err = r.db.SelectContext(ctx, &resultDTO, q, args...)
 	if err != nil {
 		r.log.Error("Error binding reception change active query", "error", err)
@@ -133,18 +135,13 @@ func (r Reception) ChangeActiveReceptionStatusByPVZID(ctx context.Context, pvzID
 		return nil, domain.ErrInconsistentState
 	}
 
-	status, err := models.GetStatusFromString(resultDTO[0].Status)
+	rec, err := resultDTO[0].ToModel()
 	if err != nil {
 		r.log.Error("Error getting reception status", "error", err)
 		return nil, err
 	}
 
-	return &models.Reception{
-		ID:       resultDTO[0].ID,
-		PVZID:    resultDTO[0].PVZID,
-		DateTime: resultDTO[0].DateTime,
-		Status:   status,
-	}, nil
+	return rec, nil
 }
 
 func NewReceptionRepo(log *slog.Logger, db *sqlx.DB) service.ReceptionRepository {

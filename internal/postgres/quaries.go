@@ -5,40 +5,40 @@ import _ "embed"
 // User queries
 //
 //go:embed sql/user_insert.sql
-var userInsertQuery string
+var UserInsertQuery string
 
 //go:embed sql/user_find_by_email.sql
-var userFindByEmailQuery string
+var UserFindByEmailQuery string
 
 // PVZ queries
 //
 //go:embed sql/pvz_insert.sql
-var pvzInsertQuery string
+var PvzInsertQuery string
 
 //go:embed sql/pvz_get_filtered_by_receptionTime_paged.sql
-var pvzGetFilteredByReceptionTime string
+var PvzGetFilteredByReceptionTime string
 
 // Reception queries
 //
 //go:embed sql/reception_insert.sql
-var receptionInsertQuery string
+var ReceptionInsertQuery string
 
 //go:embed sql/reception_get_filtered_by_receptionTime_and_pvzID.sql
-var receptionFindByPvzAndTimeQuery string
+var ReceptionFindByPvzAndTimeQuery string
 
 //go:embed sql/reception_get_active_by_PVZ.sql
-var receptionFindByStatusPvzQuery string
+var ReceptionFindByStatusPvzQuery string
 
 //go:embed sql/reception_update_status_by_pvz.sql
-var receptionUpdateByStatusAndPvzQuery string
+var ReceptionUpdateByStatusAndPvzQuery string
 
 // Product queries
 //
 //go:embed sql/product_insert_if_reception_active.sql
-var productInsertQuery string
+var ProductInsertQuery string
 
 //go:embed sql/product_get_by_receptionID.sql
-var productFindByReceptionIDQuery string
+var ProductFindByReceptionIDQuery string
 
 //go:embed sql/product_delete_if_reception_active.sql
-var productDeleteByPvzIDQuery string
+var ProductDeleteByPvzIDQuery string

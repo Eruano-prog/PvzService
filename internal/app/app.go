@@ -4,6 +4,7 @@ import (
 	"AvitoPvz/internal/config"
 	"AvitoPvz/internal/jwt"
 	"AvitoPvz/internal/postgres"
+	"AvitoPvz/internal/postgres/repository"
 	"AvitoPvz/internal/rest/controllers"
 	"AvitoPvz/internal/service"
 	"context"
@@ -46,10 +47,10 @@ func Run() error {
 		return err
 	}
 
-	userRepository := postgres.NewUserRepo(log, db)
-	pvzRepository := postgres.NewPVZRepo(log, db)
-	receptionRepository := postgres.NewReceptionRepo(log, db)
-	productRepository := postgres.NewProductRepo(log, db)
+	userRepository := repository.NewUserRepo(log, db)
+	pvzRepository := repository.NewPVZRepo(log, db)
+	receptionRepository := repository.NewReceptionRepo(log, db)
+	productRepository := repository.NewProductRepo(log, db)
 
 	// Service
 	userService := service.NewUserService(log, tokenService, userRepository)
