@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"AvitoPvz/internal/rest"
+	"AvitoPvz/internal/rest/dto"
 	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
 	"log/slog"
@@ -25,7 +26,7 @@ func (r *ReceptionController) Register(mux *http.ServeMux, tokenVerifier middlew
 }
 
 func (r *ReceptionController) createReceptionHandler(w http.ResponseWriter, req *http.Request) {
-	var request rest.PostReceptionsJSONRequestBody
+	var request dto.PostReceptionsJSONRequestBody
 	if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
 		rest.WriteError(w, r.log, http.StatusBadRequest, "invalid request")
 		return
@@ -37,11 +38,10 @@ func (r *ReceptionController) createReceptionHandler(w http.ResponseWriter, req 
 		return
 	}
 
-	resp := rest.Reception{
-		Id:       &reception.ID,
-		DateTime: reception.DateTime,
-		PvzId:    reception.PVZID,
-		Status:   rest.ReceptionStatus(reception.Status),
+	resp, err := dto.ReceptionToDTO(*reception)
+	if err != nil {
+		rest.WriteError(w, r.log, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)

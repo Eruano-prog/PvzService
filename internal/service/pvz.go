@@ -18,6 +18,14 @@ type PVZ struct {
 }
 
 func (p PVZ) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error) {
+	if pvz.ID == uuid.Nil {
+		pvz.ID = uuid.New()
+	}
+
+	if pvz.RegistrationDate.IsZero() {
+		pvz.RegistrationDate = time.Now()
+	}
+
 	err := p.pvzRepository.InsertPVZ(ctx, pvz)
 	if err != nil {
 		p.log.Error("Error inserting pvz", "err", err)

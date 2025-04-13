@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
+	"AvitoPvz/internal/rest/dto"
 	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
 	"log/slog"
@@ -26,21 +26,14 @@ func (p *ProductController) Register(mux *http.ServeMux, tokenVerifier middlewar
 }
 
 func (p *ProductController) addProductHandler(w http.ResponseWriter, req *http.Request) {
-	var request rest.PostProductsJSONRequestBody
+	var request dto.PostProductsJSONRequestBody
 	if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
 		rest.WriteError(w, p.log, http.StatusBadRequest, "invalid request")
 		return
 	}
 
-	var productType models.ProductType
-	switch string(request.Type) {
-	case string(rest.ProductTypeОбувь):
-		productType = models.ProductTypeShoes
-	case string(rest.ProductTypeОдежда):
-		productType = models.ProductTypeClothing
-	case string(rest.ProductTypeЭлектроника):
-		productType = models.ProductTypeElectronics
-	default:
+	productType, err := dto.TypeToModel(dto.ProductType(request.Type))
+	if err != nil {
 		rest.WriteError(w, p.log, http.StatusBadRequest, "invalid product type")
 		return
 	}
@@ -51,11 +44,10 @@ func (p *ProductController) addProductHandler(w http.ResponseWriter, req *http.R
 		return
 	}
 
-	resp := rest.Product{
-		Id:          &product.ID,
-		DateTime:    &product.DateTime,
-		Type:        rest.ProductType(product.Type),
-		ReceptionId: product.ReceptionID,
+	resp, err := dto.ProductToDTO(*product)
+	if err != nil {
+		rest.WriteError(w, p.log, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)

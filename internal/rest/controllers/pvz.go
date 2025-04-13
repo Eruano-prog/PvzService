@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
+	"AvitoPvz/internal/rest/dto"
 	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
 	"github.com/google/uuid"
@@ -32,42 +32,30 @@ func (p *PVZController) Register(mux *http.ServeMux, tokenVerifier middleware.Ve
 }
 
 func (p *PVZController) createPVZHandler(w http.ResponseWriter, r *http.Request) {
-	var req rest.PVZ
+	var req dto.PVZ
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		p.log.Debug("Error decoding create pvz request", "error", err)
 		rest.WriteError(w, p.log, http.StatusBadRequest, "invalid request")
 		return
 	}
 
-	city, err := rest.CityToModel(req.City)
+	pvz, err := req.ToModel()
 	if err != nil {
+		p.log.Debug("Error decoding create pvz request", "error", err)
 		rest.WriteError(w, p.log, http.StatusBadRequest, "invalid request")
 		return
 	}
 
-	pvz := models.PVZ{City: city}
-	if req.Id == nil {
-		pvz.ID = uuid.New()
-	} else {
-		pvz.ID = *req.Id
-	}
-
-	if req.RegistrationDate == nil {
-		pvz.RegistrationDate = time.Time{}
-	} else {
-		pvz.RegistrationDate = *req.RegistrationDate
-	}
-
-	createdPVZ, err := p.pvzService.CreatePVZ(r.Context(), &pvz)
+	createdPVZ, err := p.pvzService.CreatePVZ(r.Context(), pvz)
 	if err != nil {
 		rest.WriteError(w, p.log, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	resp := rest.PVZ{
-		City:             rest.PVZCity(createdPVZ.City),
-		Id:               &createdPVZ.ID,
-		RegistrationDate: &createdPVZ.RegistrationDate,
+	resp, err := dto.PVZToDTO(*createdPVZ)
+	if err != nil {
+		rest.WriteError(w, p.log, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -77,7 +65,7 @@ func (p *PVZController) createPVZHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (p *PVZController) getPVZsHandler(w http.ResponseWriter, r *http.Request) {
-	params := rest.GetPvzParams{}
+	params := dto.GetPvzParams{}
 	var err error
 
 	if startDateStr := r.URL.Query().Get("startDate"); startDateStr != "" {
@@ -123,41 +111,44 @@ func (p *PVZController) getPVZsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := make([]struct {
-		PVZ        rest.PVZ `json:"pvz"`
+		PVZ        dto.PVZ `json:"pvz"`
 		Receptions []struct {
-			Reception rest.Reception `json:"reception"`
-			Products  []rest.Product `json:"products"`
+			Reception dto.Reception `json:"reception"`
+			Products  []dto.Product `json:"products"`
 		} `json:"receptions"`
 	}, len(pvzs))
 
 	for i, pvz := range pvzs {
-		response[i].PVZ = rest.PVZ{
-			Id:               &pvz.PVZ.ID,
-			RegistrationDate: &pvz.PVZ.RegistrationDate,
-			City:             rest.PVZCity(pvz.PVZ.City),
+		pvzDTO, err := dto.PVZToDTO(pvz.PVZ)
+		if err != nil {
+			p.log.Warn("failed to encode pvz to dto", "error", err)
+			continue
 		}
 
+		response[i].PVZ = *pvzDTO
+
 		response[i].Receptions = make([]struct {
-			Reception rest.Reception `json:"reception"`
-			Products  []rest.Product `json:"products"`
+			Reception dto.Reception `json:"reception"`
+			Products  []dto.Product `json:"products"`
 		}, len(pvz.Receptions))
 
 		for j, rec := range pvz.Receptions {
-			response[i].Receptions[j].Reception = rest.Reception{
-				Id:       &rec.Reception.ID,
-				DateTime: rec.Reception.DateTime,
-				PvzId:    rec.Reception.PVZID,
-				Status:   rest.ReceptionStatus(rec.Reception.Status),
+			receptionDTO, err := dto.ReceptionToDTO(rec.Reception)
+			if err != nil {
+				p.log.Warn("failed to encode reception to dto", "error", err)
+				continue
 			}
+			response[i].Receptions[j].Reception = *receptionDTO
 
-			response[i].Receptions[j].Products = make([]rest.Product, len(rec.Products))
+			response[i].Receptions[j].Products = make([]dto.Product, len(rec.Products))
 			for k, prod := range rec.Products {
-				response[i].Receptions[j].Products[k] = rest.Product{
-					Id:          &prod.ID,
-					DateTime:    &prod.DateTime,
-					Type:        rest.ProductType(prod.Type),
-					ReceptionId: prod.ReceptionID,
+				productDTO, err := dto.ProductToDTO(prod)
+				if err != nil {
+					p.log.Warn("failed to encode product to dto", "error", err)
+					continue
 				}
+
+				response[i].Receptions[j].Products[k] = *productDTO
 			}
 		}
 	}
@@ -181,11 +172,10 @@ func (p *PVZController) closeLastReceptionHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	resp := rest.Reception{
-		Id:       &reception.ID,
-		DateTime: reception.DateTime,
-		PvzId:    reception.PVZID,
-		Status:   rest.ReceptionStatus(reception.Status),
+	resp, err := dto.ReceptionToDTO(*reception)
+	if err != nil {
+		rest.WriteError(w, p.log, http.StatusBadRequest, err.Error())
+		return
 	}
 
 	if err := json.NewEncoder(w).Encode(resp); err != nil {

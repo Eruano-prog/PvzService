@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"AvitoPvz/internal/rest/dto"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -10,7 +11,7 @@ func WriteError(w http.ResponseWriter, log *slog.Logger, code int, message strin
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 
-	e := Error{
+	e := dto.Error{
 		Message: message,
 	}
 
