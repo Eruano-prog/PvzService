@@ -59,6 +59,11 @@ type MockPVZService struct {
 	mock.Mock
 }
 
+func (m *MockPVZService) GetAllPvz(ctx context.Context) ([]models.PVZ, error) {
+	args := m.Called(ctx)
+	return args.Get(0).([]models.PVZ), args.Error(1)
+}
+
 func (m *MockPVZService) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error) {
 	args := m.Called(ctx, pvz)
 	return args.Get(0).(*models.PVZ), args.Error(1)

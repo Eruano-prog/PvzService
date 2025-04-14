@@ -41,6 +41,11 @@ type MockPVZRepository struct {
 	mock.Mock
 }
 
+func (m *MockPVZRepository) GetAllPvzs(ctx context.Context) ([]models.PVZ, error) {
+	args := m.Called(ctx)
+	return args.Get(0).([]models.PVZ), args.Error(1)
+}
+
 func (m *MockPVZRepository) InsertPVZ(ctx context.Context, pvz *models.PVZ) error {
 	args := m.Called(ctx, pvz)
 	return args.Error(0)
