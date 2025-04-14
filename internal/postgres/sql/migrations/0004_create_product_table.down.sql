@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS productions
+DROP TABLE IF EXISTS products

@@ -11,7 +11,7 @@ import (
 func SetupDBConnection(log *slog.Logger, address string) (*sqlx.DB, error) {
 	db, err := sqlx.Connect("pgx", address)
 	if err != nil {
-		log.Error("Failed to connect to database", "error", err)
+		log.Error("Failed to connect to database", "address", address, "error", err)
 		return nil, err
 	}
 

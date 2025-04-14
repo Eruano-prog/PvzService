@@ -7,12 +7,12 @@ WITH locked_reception AS (
 ),
 last_production AS (
     SELECT id
-    FROM productions
+    FROM products
     WHERE reception_id IN (SELECT id FROM locked_reception)
     ORDER BY datetime DESC
     LIMIT 1
     FOR UPDATE
 )
-DELETE FROM productions
+DELETE FROM products
 WHERE id IN (SELECT id FROM last_production)
 RETURNING id;

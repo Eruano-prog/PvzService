@@ -1,3 +1,3 @@
 SELECT *
-FROM productions
+FROM products
 WHERE reception_id = $1

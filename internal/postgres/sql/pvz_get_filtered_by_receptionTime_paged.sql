@@ -5,12 +5,12 @@ SELECT
             'reception', r,
             'products', (
                 SELECT jsonb_agg(pr)
-                FROM productions pr
+                FROM products pr
                 WHERE pr.reception_id = r.id
             )
         )
     ) AS receptions_with_products
-FROM pvz p
+FROM pvzs p
 INNER JOIN receptions r ON p.id = r.pvz_id
 WHERE r.datetime BETWEEN :startTime AND :endTime
 GROUP BY p.id

@@ -38,14 +38,14 @@ func (p Product) InsertProductIfReceptionNotClosed(ctx context.Context, product 
 
 	var insertedID uuid.UUID
 	err = p.db.QueryRowxContext(ctx, q, args...).Scan(&insertedID)
-	if errors.Is(err, pgx.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) {
 		p.log.Info("Вставки не произошло: неверный статус или ID приёмки")
 		return domain.ErrAlreadyClosed
 	} else if err != nil {
-		p.log.Error("Ошибка запроса:", err)
+		p.log.Error("Ошибка запроса:", "error", err)
 		return err
 	} else {
-		p.log.Debug("Успешно вставлено, ID:", insertedID)
+		p.log.Debug("Успешно вставлено", "ID", insertedID)
 	}
 
 	return nil
