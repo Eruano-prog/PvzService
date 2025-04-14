@@ -2,6 +2,7 @@ package middleware_test
 
 import (
 	"AvitoPvz/internal/domain/models"
+	"AvitoPvz/internal/rest"
 	"AvitoPvz/internal/rest/middleware"
 	"context"
 	"errors"
@@ -15,6 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+var testKey = rest.RequestContextKey("testKey")
 
 type MockVerifier struct {
 	mock.Mock
@@ -187,8 +190,8 @@ func TestAuthMiddleware_ContextValues(t *testing.T) {
 			assert.Equal(t, userID, ctx.Value("userID"))
 
 			originalValue := "test-value"
-			ctx = context.WithValue(ctx, "testKey", originalValue)
-			assert.Equal(t, originalValue, ctx.Value("testKey"))
+			ctx = context.WithValue(ctx, testKey, originalValue)
+			assert.Equal(t, originalValue, ctx.Value(testKey))
 		})
 
 	authMiddleware := middleware.AuthMiddleware(mockHandler, verifier, log, allowedRoles)
@@ -196,7 +199,7 @@ func TestAuthMiddleware_ContextValues(t *testing.T) {
 	req := httptest.NewRequest("GET", "/", nil)
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	ctx := context.WithValue(req.Context(), "testKey", "original-value")
+	ctx := context.WithValue(req.Context(), testKey, "original-value")
 	req = req.WithContext(ctx)
 
 	w := httptest.NewRecorder()

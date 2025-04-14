@@ -17,7 +17,7 @@ import (
 
 func TestReceptionRepository_InsertReception(t *testing.T) {
 	repo, mock, cleanup := newTestReceptionRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	reception := &models.Reception{
@@ -57,7 +57,7 @@ func TestReceptionRepository_InsertReception(t *testing.T) {
 
 func TestReceptionRepository_GetReceptionByPVZIDFilteredByReceptionTime(t *testing.T) {
 	repo, mock, cleanup := newTestReceptionRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	pvzID := uuid.New()
@@ -117,7 +117,7 @@ func TestReceptionRepository_GetReceptionByPVZIDFilteredByReceptionTime(t *testi
 
 func TestReceptionRepository_GetActiveReceptionInPVZ(t *testing.T) {
 	repo, mock, cleanup := newTestReceptionRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	pvzID := uuid.New()
@@ -164,7 +164,7 @@ func TestReceptionRepository_GetActiveReceptionInPVZ(t *testing.T) {
 
 func TestReceptionRepository_ChangeActiveReceptionStatusByPVZID(t *testing.T) {
 	repo, mock, cleanup := newTestReceptionRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	pvzID := uuid.New()

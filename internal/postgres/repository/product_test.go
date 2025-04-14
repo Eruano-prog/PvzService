@@ -17,7 +17,7 @@ import (
 
 func TestProductRepository_InsertProductIfReceptionNotClosed(t *testing.T) {
 	repo, mock, cleanup := newTestProductRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	product := &models.Product{
@@ -30,13 +30,13 @@ func TestProductRepository_InsertProductIfReceptionNotClosed(t *testing.T) {
 	t.Run("successful insertion", func(t *testing.T) {
 		// Формируем параметры, как это делает метод
 		rows := sqlmock.NewRows([]string{"id"}).AddRow(product.ID)
-		mock.ExpectQuery("INSERT INTO products").WithArgs( // Уточняем начало запроса для точности
-			product.ReceptionID,                      // reception_id (для подзапроса)
-			string(models.ReceptionStatusInProgress), // reception_status (для подзапроса)
-			product.ID,                               // product_id (для INSERT)
-			product.ReceptionID,                      // reception_id (для INSERT, снова)
-			string(product.Type),                     // type
-			product.DateTime,                         // datetime
+		mock.ExpectQuery("INSERT INTO products").WithArgs(
+			product.ReceptionID,
+			string(models.ReceptionStatusInProgress),
+			product.ID,
+			product.ReceptionID,
+			string(product.Type),
+			product.DateTime,
 		).WillReturnRows(rows)
 
 		err := repo.InsertProductIfReceptionNotClosed(ctx, product)
@@ -46,12 +46,12 @@ func TestProductRepository_InsertProductIfReceptionNotClosed(t *testing.T) {
 
 	t.Run("reception already closed", func(t *testing.T) {
 		mock.ExpectQuery("INSERT INTO products").WithArgs(
-			product.ReceptionID,                      // reception_id
-			string(models.ReceptionStatusInProgress), // reception_status
-			product.ID,                               // product_id
-			product.ReceptionID,                      // reception_id
-			string(product.Type),                     // type
-			product.DateTime,                         // datetime
+			product.ReceptionID,
+			string(models.ReceptionStatusInProgress),
+			product.ID,
+			product.ReceptionID,
+			string(product.Type),
+			product.DateTime,
 		).WillReturnError(sql.ErrNoRows)
 
 		err := repo.InsertProductIfReceptionNotClosed(ctx, product)
@@ -61,12 +61,12 @@ func TestProductRepository_InsertProductIfReceptionNotClosed(t *testing.T) {
 
 	t.Run("database error", func(t *testing.T) {
 		mock.ExpectQuery("INSERT INTO products").WithArgs(
-			product.ReceptionID,                      // reception_id
-			string(models.ReceptionStatusInProgress), // reception_status
-			product.ID,                               // product_id
-			product.ReceptionID,                      // reception_id
-			string(product.Type),                     // type
-			product.DateTime,                         // datetime
+			product.ReceptionID,
+			string(models.ReceptionStatusInProgress),
+			product.ID,
+			product.ReceptionID,
+			string(product.Type),
+			product.DateTime,
 		).WillReturnError(errors.New("database error"))
 
 		err := repo.InsertProductIfReceptionNotClosed(ctx, product)
@@ -77,7 +77,7 @@ func TestProductRepository_InsertProductIfReceptionNotClosed(t *testing.T) {
 
 func TestProductRepository_GetProductsByReceiptID(t *testing.T) {
 	repo, mock, cleanup := newTestProductRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	receptionID := uuid.New()
@@ -130,7 +130,7 @@ func TestProductRepository_GetProductsByReceiptID(t *testing.T) {
 
 func TestProductRepository_DeleteLastProductByPVZID(t *testing.T) {
 	repo, mock, cleanup := newTestProductRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	pvzID := uuid.New()
@@ -138,8 +138,8 @@ func TestProductRepository_DeleteLastProductByPVZID(t *testing.T) {
 	t.Run("successful deletion", func(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"id"}).AddRow(uuid.New())
 		mock.ExpectQuery("DELETE FROM products").WithArgs(
-			pvzID,                                    // pvz_id
-			string(models.ReceptionStatusInProgress), // status
+			pvzID,
+			string(models.ReceptionStatusInProgress),
 		).WillReturnRows(rows)
 
 		err := repo.DeleteLastProductByPVZID(ctx, pvzID)
@@ -149,8 +149,8 @@ func TestProductRepository_DeleteLastProductByPVZID(t *testing.T) {
 
 	t.Run("no product to delete", func(t *testing.T) {
 		mock.ExpectQuery("DELETE FROM products").WithArgs(
-			pvzID,                                    // pvz_id
-			string(models.ReceptionStatusInProgress), // status
+			pvzID,
+			string(models.ReceptionStatusInProgress),
 		).WillReturnError(sql.ErrNoRows)
 
 		err := repo.DeleteLastProductByPVZID(ctx, pvzID)
@@ -160,8 +160,8 @@ func TestProductRepository_DeleteLastProductByPVZID(t *testing.T) {
 
 	t.Run("database error", func(t *testing.T) {
 		mock.ExpectQuery("DELETE FROM products").WithArgs(
-			pvzID,                                    // pvz_id
-			string(models.ReceptionStatusInProgress), // status
+			pvzID,
+			string(models.ReceptionStatusInProgress),
 		).WillReturnError(errors.New("database error"))
 
 		err := repo.DeleteLastProductByPVZID(ctx, pvzID)

@@ -16,7 +16,7 @@ import (
 
 func TestUserRepository_InsertUser(t *testing.T) {
 	repo, mock, cleanup := newTestUserRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	user := &models.User{
@@ -56,7 +56,7 @@ func TestUserRepository_InsertUser(t *testing.T) {
 
 func TestUserRepository_FindUserByEmail(t *testing.T) {
 	repo, mock, cleanup := newTestUserRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	email := "test@example.com"

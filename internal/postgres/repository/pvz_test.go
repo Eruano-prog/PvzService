@@ -16,7 +16,7 @@ import (
 
 func TestPVZRepository_InsertPVZ(t *testing.T) {
 	repo, mock, cleanup := newTestPVZRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	pvz := &models.PVZ{
@@ -56,7 +56,7 @@ func TestPVZRepository_InsertPVZ(t *testing.T) {
 
 func TestPVZRepository_GetPagedPVZsFilteredByReceptionTime(t *testing.T) {
 	repo, mock, cleanup := newTestPVZRepo(t)
-	defer cleanup()
+	defer callCleanupOrLog(t, cleanup)
 
 	ctx := context.Background()
 	fromTime := time.Now().Add(-24 * time.Hour)
@@ -65,7 +65,6 @@ func TestPVZRepository_GetPagedPVZsFilteredByReceptionTime(t *testing.T) {
 	limit := 10
 
 	t.Run("successful query", func(t *testing.T) {
-		// Подготовим мок-данные
 		pvzID := uuid.New()
 		dbResponse := dbResponse{
 			PvzDTO: dto.PvzDTO{
@@ -79,12 +78,11 @@ func TestPVZRepository_GetPagedPVZsFilteredByReceptionTime(t *testing.T) {
 		rows := sqlmock.NewRows([]string{"id", "city", "registration_time", "receptions_with_products"}).
 			AddRow(dbResponse.ID, dbResponse.City, dbResponse.RegistrationTime, dbResponse.ReceptionsJSON)
 
-		// Ожидаем запрос с конкретными аргументами
 		mock.ExpectQuery("SELECT .* FROM pvzs").WithArgs(
-			fromTime,   // startTime
-			toTime,     // endTime
-			fromNumber, // offset
-			limit,      // limit
+			fromTime,
+			toTime,
+			fromNumber,
+			limit,
 		).WillReturnRows(rows)
 
 		pvzs, err := repo.GetPagedPVZsFilteredByReceptionTime(ctx, &fromTime, &toTime, fromNumber, limit)
@@ -116,7 +114,6 @@ func TestPVZRepository_GetPagedPVZsFilteredByReceptionTime(t *testing.T) {
 	})
 }
 
-// Вспомогательная функция для подготовки мок-данных JSON
 func prepareMockReceptionsJSON(t *testing.T) []byte {
 	receptionID := uuid.New()
 	productID := uuid.New()

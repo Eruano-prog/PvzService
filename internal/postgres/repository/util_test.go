@@ -64,3 +64,10 @@ func newTestPVZRepo(t *testing.T) (*PVZ, sqlmock.Sqlmock, func() error) {
 
 	return repo, mock, db.Close
 }
+
+func callCleanupOrLog(t *testing.T, clean func() error) {
+	err := clean()
+	if err != nil {
+		t.Logf("failed to cleanup: %v", err)
+	}
+}

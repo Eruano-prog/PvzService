@@ -32,14 +32,19 @@ func TestIntegrationCreatePVZAndReception(t *testing.T) {
 
 	postgresContainer, dbURL, err := setupPostgresContainer(ctx, t)
 	require.NoError(t, err, "failed to setup postgres container")
-	defer postgresContainer.Terminate(ctx)
+	defer func(postgresContainer testcontainers.Container, ctx context.Context, opts ...testcontainers.TerminateOption) {
+		err := postgresContainer.Terminate(ctx, opts...)
+		if err != nil {
+			t.Logf("failed to terminate postgres container: %v", err)
+		}
+	}(postgresContainer, ctx)
 
-	os.Setenv("DB_ADDRESS", dbURL)
-	os.Setenv("LOG_LEVEL", "DEBUG")
-	os.Setenv("TOKEN_SECRET", "test-secret")
-	os.Setenv("TOKEN_TTL", "24h")
-	os.Setenv("HTTP_ADDRESS", ":8070")
-	os.Setenv("HTTP_TIMEOUT", "5s")
+	setEnvironmentVariable(t, "DB_ADDRESS", dbURL)
+	setEnvironmentVariable(t, "LOG_LEVEL", "DEBUG")
+	setEnvironmentVariable(t, "TOKEN_SECRET", "test-secret")
+	setEnvironmentVariable(t, "TOKEN_TTL", "24h")
+	setEnvironmentVariable(t, "HTTP_ADDRESS", ":8070")
+	setEnvironmentVariable(t, "HTTP_TIMEOUT", "5s")
 
 	go func() {
 		if err := Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -85,7 +90,7 @@ func setupPostgresContainer(ctx context.Context, t *testing.T) (testcontainers.C
 		WaitingFor: wait.ForAll(
 			wait.ForLog("database system is ready to accept connections"),
 			wait.ForListeningPort("5432/tcp"),
-		).WithStartupTimeout(30 * time.Second),
+		).WithDeadline(30 * time.Second),
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -118,7 +123,7 @@ func getDummyToken(t *testing.T, role string) (string, error) {
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	require.NoError(t, err, "failed to send dummy login request")
-	defer resp.Body.Close()
+	defer closeOrLog(t, resp.Body)
 
 	require.Equal(t, http.StatusOK, resp.StatusCode, "expected 200 OK for dummy login")
 
@@ -150,7 +155,7 @@ func createPVZ(t *testing.T, token string) (uuid.UUID, error) {
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err, "failed to send PVZ request")
-	defer resp.Body.Close()
+	defer closeOrLog(t, resp.Body)
 
 	require.Equal(t, http.StatusCreated, resp.StatusCode, "expected 201 Created for PVZ creation")
 
@@ -177,7 +182,7 @@ func createReception(t *testing.T, token string, pvzID uuid.UUID) (uuid.UUID, er
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err, "failed to send reception request")
-	defer resp.Body.Close()
+	defer closeOrLog(t, resp.Body)
 
 	require.Equal(t, http.StatusCreated, resp.StatusCode, "expected 201 Created for reception creation")
 
@@ -207,7 +212,7 @@ func createProduct(t *testing.T, token string, pvzID, receptionID uuid.UUID) err
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err, "failed to send product request")
-	defer resp.Body.Close()
+	defer closeOrLog(t, resp.Body)
 
 	require.Equal(t, http.StatusCreated, resp.StatusCode, "expected 201 Created for product creation")
 
@@ -222,9 +227,24 @@ func closeReception(t *testing.T, token string, pvzID uuid.UUID) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	require.NoError(t, err, "failed to send close reception request")
-	defer resp.Body.Close()
+	defer closeOrLog(t, resp.Body)
 
 	require.Equal(t, http.StatusOK, resp.StatusCode, "expected 200 OK for closing reception")
 
 	return nil
+}
+
+func setEnvironmentVariable(t *testing.T, key, value string) {
+	err := os.Setenv(key, value)
+	if err != nil {
+		t.Errorf("failed to set environment variable: %v", err)
+		return
+	}
+}
+
+func closeOrLog(t *testing.T, c io.Closer) {
+	err := c.Close()
+	if err != nil {
+		t.Logf("failed to close connection: %v", err)
+	}
 }

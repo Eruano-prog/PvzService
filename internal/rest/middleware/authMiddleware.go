@@ -43,6 +43,6 @@ func AuthMiddleware(next http.Handler, verifier Verifier, log *slog.Logger, allo
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "userID", tokenInfo.UserID)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), rest.IdKey, tokenInfo.UserID)))
 	})
 }
