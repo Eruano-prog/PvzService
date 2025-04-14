@@ -2,8 +2,9 @@ package models
 
 import (
 	"AvitoPvz/internal/domain"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Product struct {

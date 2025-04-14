@@ -6,15 +6,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"log/slog"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/oapi-codegen/runtime/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"log/slog"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestAuthController_DummyLoginHandler(t *testing.T) {

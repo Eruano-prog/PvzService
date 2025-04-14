@@ -5,10 +5,11 @@ import (
 	"AvitoPvz/internal/domain/models"
 	jwtService "AvitoPvz/internal/jwt"
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"log/slog"
 	"testing"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -43,12 +44,10 @@ func TestGenerateAndVerifyToken(t *testing.T) {
 		assert.Equal(t, role, verifiedToken.UserRole)
 	})
 
-	// Test token with invalid signature
 	t.Run("invalid signature", func(t *testing.T) {
 		tokenString, err := service.GenerateToken(tokenInfo)
 		require.NoError(t, err)
 
-		// Create another service with different secret
 		invalidService := jwtService.NewJWTService(log, "different-secret", expiration)
 
 		_, err = invalidService.VerifyToken(tokenString)
@@ -56,14 +55,11 @@ func TestGenerateAndVerifyToken(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid token")
 	})
 
-	// Test expired token
 	t.Run("expired token", func(t *testing.T) {
-		// Create service with very short expiration
 		shortExpService := jwtService.NewJWTService(log, secret, time.Nanosecond)
 		tokenString, err := shortExpService.GenerateToken(tokenInfo)
 		require.NoError(t, err)
 
-		// Wait for token to expire
 		time.Sleep(time.Nanosecond)
 
 		_, err = service.VerifyToken(tokenString)
@@ -71,14 +67,12 @@ func TestGenerateAndVerifyToken(t *testing.T) {
 		assert.Contains(t, err.Error(), "token is expired")
 	})
 
-	// Test invalid token format
 	t.Run("invalid token format", func(t *testing.T) {
 		_, err := service.VerifyToken("invalid.token.format")
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid token")
 	})
 
-	// Test missing userID
 	t.Run("missing userID", func(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"role": string(role),
@@ -92,7 +86,6 @@ func TestGenerateAndVerifyToken(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid userID format")
 	})
 
-	// Test invalid userID format
 	t.Run("invalid userID format", func(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"userID": "not-a-uuid",
@@ -107,7 +100,6 @@ func TestGenerateAndVerifyToken(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid userID")
 	})
 
-	// Test missing role
 	t.Run("missing role", func(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"userID": userID.String(),
@@ -121,7 +113,6 @@ func TestGenerateAndVerifyToken(t *testing.T) {
 		assert.Contains(t, err.Error(), "invalid role format")
 	})
 
-	// Test invalid role
 	t.Run("invalid role", func(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"userID": userID.String(),
@@ -150,12 +141,10 @@ func TestNewJWTService(t *testing.T) {
 	t.Run("empty secret", func(t *testing.T) {
 		service := jwtService.NewJWTService(log, "", expiration)
 		require.NotNil(t, service)
-		// This should still work, but tokens won't be secure
 	})
 
 	t.Run("zero expiration", func(t *testing.T) {
 		service := jwtService.NewJWTService(log, secret, 0)
 		require.NotNil(t, service)
-		// Tokens will be generated but will expire immediately
 	})
 }

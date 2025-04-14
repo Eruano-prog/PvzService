@@ -3,11 +3,12 @@ package postgres
 import (
 	"embed"
 	"errors"
+	"log/slog"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/pgx"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
-	"log/slog"
 )
 
 //go:embed sql/migrations/*.sql

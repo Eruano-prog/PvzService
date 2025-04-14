@@ -2,8 +2,9 @@ package dto
 
 import (
 	"AvitoPvz/internal/domain/models"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func (p PVZ) ToModel() (*models.PVZ, error) {

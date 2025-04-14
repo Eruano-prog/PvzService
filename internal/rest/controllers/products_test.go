@@ -6,15 +6,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestProductController_AddProductHandler(t *testing.T) {
@@ -34,13 +35,11 @@ func TestProductController_AddProductHandler(t *testing.T) {
 			DateTime:    now,
 		}
 
-		// Настройка моков
 		productService.On("AddProduct", mock.Anything, productType, pvzID).
 			Return(expectedProduct, nil)
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
 
-		// Подготовка запроса
 		requestBody := dto.PostProductsJSONRequestBody{
 			PvzId: pvzID,
 			Type:  dto.PostProductsJSONBodyType(dto.ProductTypeЭлектроника),
@@ -53,12 +52,10 @@ func TestProductController_AddProductHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)
 
-		// Проверки
 		require.Equal(t, http.StatusCreated, w.Code)
 
 		var response dto.Product
@@ -83,14 +80,12 @@ func TestProductController_AddProductHandler(t *testing.T) {
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
 
-		// Подготовка запроса с невалидным JSON
 		req := httptest.NewRequest("POST", "/products", bytes.NewReader([]byte("invalid json")))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer valid-token")
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)
@@ -108,7 +103,6 @@ func TestProductController_AddProductHandler(t *testing.T) {
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
 
-		// Подготовка запроса с невалидным типом продукта
 		requestBody := dto.PostProductsJSONRequestBody{
 			PvzId: uuid.New(),
 			Type:  "invalid-type",
@@ -121,7 +115,6 @@ func TestProductController_AddProductHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)
@@ -143,13 +136,11 @@ func TestProductController_AddProductHandler(t *testing.T) {
 		productType := models.ProductTypeElectronics
 		expectedErr := "service error"
 
-		// Настройка моков
 		productService.On("AddProduct", mock.Anything, productType, pvzID).
 			Return((*models.Product)(nil), errors.New(expectedErr))
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
 
-		// Подготовка запроса
 		requestBody := dto.PostProductsJSONRequestBody{
 			PvzId: pvzID,
 			Type:  dto.PostProductsJSONBodyType(dto.ProductTypeЭлектроника),
@@ -162,7 +153,6 @@ func TestProductController_AddProductHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)

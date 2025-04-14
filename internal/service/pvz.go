@@ -4,9 +4,10 @@ import (
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/rest"
 	"context"
-	"github.com/google/uuid"
 	"log/slog"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type PVZ struct {

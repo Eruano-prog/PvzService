@@ -3,12 +3,12 @@ package service_test
 import (
 	"AvitoPvz/internal/domain/models"
 	"context"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"time"
 )
 
-// Mock для TokenService
 type MockTokenService struct {
 	mock.Mock
 }
@@ -23,7 +23,6 @@ func (m *MockTokenService) VerifyToken(token string) (*models.Token, error) {
 	return args.Get(0).(*models.Token), args.Error(1)
 }
 
-// Mock для UserRepository
 type MockUserRepository struct {
 	mock.Mock
 }
@@ -38,7 +37,6 @@ func (m *MockUserRepository) InsertUser(ctx context.Context, user *models.User) 
 	return args.Error(0)
 }
 
-// MockPVZRepository для тестирования PVZ сервиса
 type MockPVZRepository struct {
 	mock.Mock
 }
@@ -53,7 +51,6 @@ func (m *MockPVZRepository) GetPagedPVZsFilteredByReceptionTime(ctx context.Cont
 	return args.Get(0).([]models.PVZWithReceptions), args.Error(1)
 }
 
-// MockReceptionRepository для тестирования PVZ и Product сервисов
 type MockReceptionRepository struct {
 	mock.Mock
 }
@@ -78,7 +75,6 @@ func (m *MockReceptionRepository) ChangeActiveReceptionStatusByPVZID(ctx context
 	return args.Get(0).(*models.Reception), args.Error(1)
 }
 
-// MockProductRepository для тестирования PVZ и Product сервисов
 type MockProductRepository struct {
 	mock.Mock
 }

@@ -6,9 +6,10 @@ import (
 	"AvitoPvz/internal/rest"
 	"context"
 	"errors"
+	"log/slog"
+
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"log/slog"
 )
 
 type User struct {

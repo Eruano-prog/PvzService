@@ -6,15 +6,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestReceptionController_CreateReceptionHandler(t *testing.T) {
@@ -33,13 +34,11 @@ func TestReceptionController_CreateReceptionHandler(t *testing.T) {
 			Status:   models.ReceptionStatusInProgress,
 		}
 
-		// Настройка моков
 		receptionService.On("CreateReception", mock.Anything, pvzID).
 			Return(expectedReception, nil)
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
 
-		// Подготовка запроса
 		requestBody := dto.PostReceptionsJSONRequestBody{
 			PvzId: pvzID,
 		}
@@ -51,12 +50,10 @@ func TestReceptionController_CreateReceptionHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)
 
-		// Проверки
 		require.Equal(t, http.StatusCreated, w.Code)
 
 		var response dto.Reception
@@ -81,14 +78,12 @@ func TestReceptionController_CreateReceptionHandler(t *testing.T) {
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
 
-		// Подготовка запроса с невалидным JSON
 		req := httptest.NewRequest("POST", "/receptions", bytes.NewReader([]byte("invalid json")))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", "Bearer valid-token")
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)
@@ -106,13 +101,10 @@ func TestReceptionController_CreateReceptionHandler(t *testing.T) {
 		pvzID := uuid.New()
 		expectedErr := "service error"
 
-		// Настройка моков
 		receptionService.On("CreateReception", mock.Anything, pvzID).
 			Return((*models.Reception)(nil), errors.New(expectedErr))
 		mockVerifier.On("VerifyToken", "valid-token").
 			Return(&models.Token{UserRole: models.RoleEmployee}, nil)
-
-		// Подготовка запроса
 		requestBody := dto.PostReceptionsJSONRequestBody{
 			PvzId: pvzID,
 		}
@@ -124,7 +116,6 @@ func TestReceptionController_CreateReceptionHandler(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		// Регистрация роута и вызов
 		mux := http.NewServeMux()
 		controller.Register(mux, mockVerifier)
 		mux.ServeHTTP(w, req)

@@ -3,8 +3,9 @@ package postgres
 import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/jmoiron/sqlx"
 	"log/slog"
+
+	"github.com/jmoiron/sqlx"
 )
 
 func SetupDBConnection(log *slog.Logger, address string) (*sqlx.DB, error) {

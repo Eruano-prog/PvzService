@@ -5,12 +5,13 @@ import (
 	"AvitoPvz/internal/service"
 	"context"
 	"errors"
+	"log/slog"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"log/slog"
-	"testing"
 )
 
 func TestProductService_AddProduct(t *testing.T) {

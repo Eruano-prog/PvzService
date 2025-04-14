@@ -2,6 +2,7 @@ package models
 
 import (
 	"AvitoPvz/internal/domain"
+
 	"github.com/google/uuid"
 )
 

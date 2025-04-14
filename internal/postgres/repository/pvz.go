@@ -7,10 +7,11 @@ import (
 	"AvitoPvz/internal/service"
 	"context"
 	"encoding/json"
-	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"log/slog"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 const (

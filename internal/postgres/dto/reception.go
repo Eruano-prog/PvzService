@@ -2,8 +2,9 @@ package dto
 
 import (
 	"AvitoPvz/internal/domain/models"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ReceptionDTO struct {

@@ -5,11 +5,12 @@ import (
 	"AvitoPvz/internal/rest/dto"
 	"AvitoPvz/internal/rest/middleware"
 	"encoding/json"
-	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type PVZController struct {

@@ -3,8 +3,9 @@ package service
 import (
 	"AvitoPvz/internal/domain/models"
 	"context"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type TokenService interface {

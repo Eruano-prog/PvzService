@@ -3,9 +3,10 @@ package controllers
 import (
 	"AvitoPvz/internal/domain/models"
 	"context"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"time"
 )
 
 type MockUserService struct {

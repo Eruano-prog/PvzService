@@ -9,8 +9,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"github.com/jmoiron/sqlx"
 	"log/slog"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type User struct {

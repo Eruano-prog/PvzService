@@ -5,9 +5,10 @@ import (
 	"AvitoPvz/internal/domain/models"
 	"AvitoPvz/internal/service"
 	"context"
-	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"testing"
+
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,6 @@ func TestUserService_Register(t *testing.T) {
 		tokenService := new(MockTokenService)
 		log := slog.Default()
 
-		// Настройка моков
 		repo.On("FindUserByEmail", mock.Anything, "test@example.com").
 			Return((*models.User)(nil), domain.ErrEntityNotFound)
 
@@ -54,7 +54,6 @@ func TestUserService_Login(t *testing.T) {
 			Role:     models.RoleModerator,
 		}
 
-		// Настройка моков
 		repo.On("FindUserByEmail", mock.Anything, "test@example.com").
 			Return(user, nil)
 

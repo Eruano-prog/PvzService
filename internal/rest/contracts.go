@@ -3,8 +3,9 @@ package rest
 import (
 	"AvitoPvz/internal/domain/models"
 	"context"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserService interface {

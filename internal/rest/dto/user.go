@@ -2,6 +2,7 @@ package dto
 
 import (
 	"AvitoPvz/internal/domain/models"
+
 	"github.com/oapi-codegen/runtime/types"
 )
 
