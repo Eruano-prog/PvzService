@@ -18,6 +18,16 @@ type PVZ struct {
 	productRepository   ProductRepository
 }
 
+func (p PVZ) GetAllPvz(ctx context.Context) ([]models.PVZ, error) {
+	result, err := p.pvzRepository.GetAllPvzs(ctx)
+	if err != nil {
+		p.log.Error("GetAllPvz error", "Error", err)
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (p PVZ) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error) {
 	if pvz.ID == uuid.Nil {
 		pvz.ID = uuid.New()

@@ -18,6 +18,9 @@ var PvzInsertQuery string
 //go:embed sql/pvz_get_filtered_by_receptionTime_paged.sql
 var PvzGetFilteredByReceptionTime string
 
+//go:embed sql/pvz_get_all.sql
+var PvzGetAll string
+
 // Reception queries
 //
 //go:embed sql/reception_insert.sql

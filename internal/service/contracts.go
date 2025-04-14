@@ -22,6 +22,7 @@ type PVZRepository interface {
 	InsertPVZ(ctx context.Context, pvz *models.PVZ) error
 
 	GetPagedPVZsFilteredByReceptionTime(ctx context.Context, fromTime, toTime *time.Time, fromNumber, limit int) ([]models.PVZWithReceptions, error)
+	GetAllPvzs(ctx context.Context) ([]models.PVZ, error)
 }
 
 type ReceptionRepository interface {

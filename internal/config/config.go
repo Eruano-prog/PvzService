@@ -15,6 +15,7 @@ type HTTPConfig struct {
 type Config struct {
 	LogLevel    string        `yaml:"log_level" env:"LOG_LEVEL" env-default:"DEBUG"`
 	HTTPConfig  HTTPConfig    `yaml:"api_server"`
+	GrpcAddress string        `yaml:"grpc_address" env:"GRPC_ADDRESS" env-default:":3000"`
 	DBAddress   string        `yaml:"db_address" env:"DB_ADDRESS" env-default:"localhost:5432"`
 	TokenTTL    time.Duration `yaml:"token_ttl" env:"TOKEN_TTL" env-default:"24h"`
 	TokenSecret string        `yaml:"token_secret" env:"TOKEN_SECRET" env-default:"testingParam"`

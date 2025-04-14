@@ -2,6 +2,8 @@ package app
 
 import (
 	"AvitoPvz/internal/config"
+	pvzGrpc "AvitoPvz/internal/grpc"
+	pvzGrpcpb "AvitoPvz/internal/grpc/api"
 	"AvitoPvz/internal/jwt"
 	"AvitoPvz/internal/postgres"
 	"AvitoPvz/internal/postgres/repository"
@@ -10,6 +12,10 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log/slog"
 	"net"
 	"net/http"
@@ -57,7 +63,6 @@ func Run() error {
 	pvzService := service.NewPVZService(log, pvzRepository, receptionRepository, productRepository)
 	receptionService := service.NewReceptionService(log, receptionRepository)
 	productService := service.NewProductService(log, productRepository, receptionRepository)
-
 	// Controller
 	authController := controllers.NewAuthController(log, userService)
 	pvzController := controllers.NewPVZController(log, pvzService)
@@ -72,30 +77,59 @@ func Run() error {
 	receptionController.Register(mux, tokenService)
 	productController.Register(mux, tokenService)
 
-	server := http.Server{
+	httpServer := http.Server{
 		Addr:        cfg.HTTPConfig.Address,
 		ReadTimeout: cfg.HTTPConfig.Timeout,
 		Handler:     mux,
 		BaseContext: func(_ net.Listener) context.Context { return ctx },
 	}
 
+	// GRPC
+	grpcListener, err := net.Listen("tcp", cfg.GrpcAddress)
+	if err != nil {
+		log.Error("failed to listen", "error", err)
+		os.Exit(1)
+	}
+
+	grpcServer := grpc.NewServer()
+	pvzGrpcpb.RegisterPVZServiceServer(grpcServer, pvzGrpc.NewServer(pvzService))
+	reflection.Register(grpcServer)
+
 	go func() {
 		<-ctx.Done()
 		log.Debug("shutting down server")
-		if err := server.Shutdown(context.Background()); err != nil {
+		grpcServer.GracefulStop()
+		if err := httpServer.Shutdown(context.Background()); err != nil {
 			log.Error("erroneous shutdown", "error", err)
 		}
 	}()
 
-	log.Info("Running HTTP server", "address", cfg.HTTPConfig.Address)
-	if err := server.ListenAndServe(); err != nil {
+	errGroup, _ := errgroup.WithContext(ctx)
+
+	errGroup.Go(func() error {
+		err := httpServer.ListenAndServe()
 		if !errors.Is(err, http.ErrServerClosed) {
 			log.Error("server closed unexpectedly", "error", err)
 			return err
 		}
+		return nil
+	})
+
+	errGroup.Go(func() error {
+		log.Info("starting gRPC server", "address", cfg.GrpcAddress)
+		if err := grpcServer.Serve(grpcListener); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+			return fmt.Errorf("gRPC server error: %w", err)
+		}
+		return nil
+	})
+
+	if err := errGroup.Wait(); err != nil {
+		log.Error("server error", "error", err)
+		return err
 	}
 
-	log.Debug("server closed")
+	log.Info("server shutdown completed")
+
 	return nil
 }
 

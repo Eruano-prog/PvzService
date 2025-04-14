@@ -22,7 +22,6 @@ type PVZ struct {
 	log *slog.Logger
 	db  *sqlx.DB
 }
-
 type dbResponse struct {
 	dto.PvzDTO
 	ReceptionsJSON []byte `db:"receptions_with_products"`
@@ -60,6 +59,28 @@ func (p PVZ) InsertPVZ(ctx context.Context, pvz *models.PVZ) error {
 	}
 
 	return nil
+}
+
+func (p PVZ) GetAllPvzs(ctx context.Context) ([]models.PVZ, error) {
+	var resultDTO []dto.PvzDTO
+	err := p.db.SelectContext(ctx, &resultDTO, postgres.PvzGetAll)
+	if err != nil {
+		p.log.Error("Error getting all PVZs", "error", err)
+		return nil, err
+	}
+
+	result := make([]models.PVZ, 0, len(resultDTO))
+	for _, v := range resultDTO {
+		model, err := v.ToModel()
+		if err != nil {
+			p.log.Warn("Error converting PVZ to model", "error", err)
+			continue
+		}
+
+		result = append(result, model)
+	}
+
+	return result, nil
 }
 
 func (p PVZ) GetPagedPVZsFilteredByReceptionTime(
