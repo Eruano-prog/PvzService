@@ -1,0 +1,5 @@
+log_level: DEBUG
+token_ttl: 24h
+api_server:
+  address: :8080
+  timeout: 5s
