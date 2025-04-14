@@ -22,7 +22,7 @@ func NewProductController(log *slog.Logger, productService rest.ProductService) 
 }
 
 func (p *ProductController) Register(mux *http.ServeMux, tokenVerifier middleware.Verifier) {
-	mux.Handle("POST /products", middleware.AuthMiddleware(http.HandlerFunc(p.addProductHandler), tokenVerifier, p.log, middleware.EmployeeOnly))
+	mux.Handle("POST /products", middleware.Auth(http.HandlerFunc(p.addProductHandler), tokenVerifier, p.log, middleware.EmployeeOnly))
 }
 
 func (p *ProductController) addProductHandler(w http.ResponseWriter, req *http.Request) {

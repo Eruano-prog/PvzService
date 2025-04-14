@@ -20,7 +20,7 @@ type Verifier interface {
 	VerifyToken(tokenString string) (tokenInfo *models.Token, err error)
 }
 
-func AuthMiddleware(next http.Handler, verifier Verifier, log *slog.Logger, allowedRoles []models.UserRole) http.Handler {
+func Auth(next http.Handler, verifier Verifier, log *slog.Logger, allowedRoles []models.UserRole) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		token = strings.TrimPrefix(token, "Bearer ")

@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"AvitoPvz/internal/domain/models"
+	"AvitoPvz/internal/service"
 	"context"
 	"time"
 
@@ -97,4 +98,20 @@ func (m *MockProductRepository) GetProductsByReceiptID(ctx context.Context, rece
 func (m *MockProductRepository) DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) error {
 	args := m.Called(ctx, pvzID)
 	return args.Error(0)
+}
+
+type PrometheusBusinessMetrics struct {
+}
+
+func NewMockMetrics() service.BusinessMetrics {
+	return &PrometheusBusinessMetrics{}
+}
+
+func (m *PrometheusBusinessMetrics) IncPVZCreated() {
+}
+
+func (m *PrometheusBusinessMetrics) IncReceptionCreated() {
+}
+
+func (m *PrometheusBusinessMetrics) IncProductAdded() {
 }

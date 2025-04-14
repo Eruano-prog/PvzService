@@ -18,6 +18,7 @@ import (
 func TestReceptionService_CreateReception(t *testing.T) {
 	t.Run("successful creation", func(t *testing.T) {
 		repo := new(MockReceptionRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
@@ -30,7 +31,7 @@ func TestReceptionService_CreateReception(t *testing.T) {
 				assert.WithinDuration(t, time.Now(), reception.DateTime, time.Second)
 			})
 
-		s := service.NewReceptionService(log, repo)
+		s := service.NewReceptionService(log, repo, metrics)
 
 		result, err := s.CreateReception(context.Background(), pvzID)
 
@@ -43,6 +44,7 @@ func TestReceptionService_CreateReception(t *testing.T) {
 
 	t.Run("error when repository fails", func(t *testing.T) {
 		repo := new(MockReceptionRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
@@ -50,7 +52,7 @@ func TestReceptionService_CreateReception(t *testing.T) {
 		repo.On("InsertReception", mock.Anything, mock.AnythingOfType("*models.Reception")).
 			Return(expectedErr)
 
-		s := service.NewReceptionService(log, repo)
+		s := service.NewReceptionService(log, repo, metrics)
 
 		result, err := s.CreateReception(context.Background(), pvzID)
 

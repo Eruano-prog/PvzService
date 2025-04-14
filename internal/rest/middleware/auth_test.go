@@ -65,7 +65,6 @@ func TestAuthMiddleware_Success(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Setup
 			verifier := new(MockVerifier)
 			log := slog.Default()
 			mockHandler := new(MockHandler)
@@ -81,10 +80,10 @@ func TestAuthMiddleware_Success(t *testing.T) {
 				Run(func(args mock.Arguments) {
 					r := args.Get(1).(*http.Request)
 					ctx := r.Context()
-					assert.Equal(t, userID, ctx.Value("userID"))
+					assert.Equal(t, userID, ctx.Value(rest.IdKey))
 				})
 
-			authMiddleware := middleware.AuthMiddleware(mockHandler, verifier, log, tc.allowedRoles)
+			authMiddleware := middleware.Auth(mockHandler, verifier, log, tc.allowedRoles)
 
 			req := httptest.NewRequest("GET", "/", nil)
 			req.Header.Set("Authorization", "Bearer "+tc.token)
@@ -146,7 +145,7 @@ func TestAuthMiddleware_ErrorCases(t *testing.T) {
 			if tc.mockSetup != nil {
 				tc.mockSetup(verifier)
 			}
-			authMiddleware := middleware.AuthMiddleware(mockHandler, verifier, log, tc.allowedRoles)
+			authMiddleware := middleware.Auth(mockHandler, verifier, log, tc.allowedRoles)
 
 			req := httptest.NewRequest("GET", "/", nil)
 			if tc.token != "" {
@@ -194,7 +193,7 @@ func TestAuthMiddleware_ContextValues(t *testing.T) {
 			assert.Equal(t, originalValue, ctx.Value(testKey))
 		})
 
-	authMiddleware := middleware.AuthMiddleware(mockHandler, verifier, log, allowedRoles)
+	authMiddleware := middleware.Auth(mockHandler, verifier, log, allowedRoles)
 
 	req := httptest.NewRequest("GET", "/", nil)
 	req.Header.Set("Authorization", "Bearer "+token)

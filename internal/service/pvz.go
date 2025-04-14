@@ -16,6 +16,8 @@ type PVZ struct {
 	pvzRepository       PVZRepository
 	receptionRepository ReceptionRepository
 	productRepository   ProductRepository
+
+	metrics BusinessMetrics
 }
 
 func (p PVZ) GetAllPvz(ctx context.Context) ([]models.PVZ, error) {
@@ -42,6 +44,8 @@ func (p PVZ) CreatePVZ(ctx context.Context, pvz *models.PVZ) (*models.PVZ, error
 		p.log.Error("Error inserting pvz", "err", err)
 		return nil, err
 	}
+
+	p.metrics.IncPVZCreated()
 
 	return pvz, nil
 }
@@ -78,11 +82,12 @@ func (p PVZ) DeleteLastProduct(ctx context.Context, pvzID uuid.UUID) error {
 	return nil
 }
 
-func NewPVZService(log *slog.Logger, pvzRepository PVZRepository, receptionRepository ReceptionRepository, productRepository ProductRepository) rest.PVZService {
+func NewPVZService(log *slog.Logger, pvzRepository PVZRepository, receptionRepository ReceptionRepository, productRepository ProductRepository, metrics BusinessMetrics) rest.PVZService {
 	return &PVZ{
 		log:                 log,
 		pvzRepository:       pvzRepository,
 		receptionRepository: receptionRepository,
 		productRepository:   productRepository,
+		metrics:             metrics,
 	}
 }

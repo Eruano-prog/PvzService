@@ -26,10 +26,10 @@ func NewPVZController(log *slog.Logger, pvzService rest.PVZService) *PVZControll
 }
 
 func (p *PVZController) Register(mux *http.ServeMux, tokenVerifier middleware.Verifier) {
-	mux.Handle("POST /pvz", middleware.AuthMiddleware(http.HandlerFunc(p.createPVZHandler), tokenVerifier, p.log, middleware.ModeratorOnly))
-	mux.Handle("GET /pvz", middleware.AuthMiddleware(http.HandlerFunc(p.getPVZsHandler), tokenVerifier, p.log, middleware.EmployeeAndModerator))
-	mux.Handle("POST /pvz/{pvzId}/close_last_reception", middleware.AuthMiddleware(http.HandlerFunc(p.closeLastReceptionHandler), tokenVerifier, p.log, middleware.EmployeeAndModerator))
-	mux.Handle("POST /pvz/{pvzId}/delete_last_product", middleware.AuthMiddleware(http.HandlerFunc(p.deleteLastProductHandler), tokenVerifier, p.log, middleware.EmployeeOnly))
+	mux.Handle("POST /pvz", middleware.Auth(http.HandlerFunc(p.createPVZHandler), tokenVerifier, p.log, middleware.ModeratorOnly))
+	mux.Handle("GET /pvz", middleware.Auth(http.HandlerFunc(p.getPVZsHandler), tokenVerifier, p.log, middleware.EmployeeAndModerator))
+	mux.Handle("POST /pvz/{pvzId}/close_last_reception", middleware.Auth(http.HandlerFunc(p.closeLastReceptionHandler), tokenVerifier, p.log, middleware.EmployeeAndModerator))
+	mux.Handle("POST /pvz/{pvzId}/delete_last_product", middleware.Auth(http.HandlerFunc(p.deleteLastProductHandler), tokenVerifier, p.log, middleware.EmployeeOnly))
 }
 
 func (p *PVZController) createPVZHandler(w http.ResponseWriter, r *http.Request) {

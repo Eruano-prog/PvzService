@@ -20,12 +20,13 @@ func TestPVZService_CreatePVZ(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		testPVZ := &models.PVZ{ID: uuid.New(), City: models.CityMSK}
 		pvzRepo.On("InsertPVZ", mock.Anything, testPVZ).Return(nil)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		result, err := s.CreatePVZ(context.Background(), testPVZ)
 
@@ -38,13 +39,14 @@ func TestPVZService_CreatePVZ(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		testPVZ := &models.PVZ{ID: uuid.New(), City: models.CityMSK}
 		expectedErr := errors.New("database error")
 		pvzRepo.On("InsertPVZ", mock.Anything, testPVZ).Return(expectedErr)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		_, err := s.CreatePVZ(context.Background(), testPVZ)
 
@@ -59,6 +61,7 @@ func TestPVZService_GetPVZsWithReceptions(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		startDate := time.Now().Add(-24 * time.Hour)
@@ -83,7 +86,7 @@ func TestPVZService_GetPVZsWithReceptions(t *testing.T) {
 			10).
 			Return(expectedPVZs, nil)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		result, err := s.GetPVZsWithReceptions(context.Background(), &startDate, &endDate, 1, 10)
 
@@ -96,6 +99,7 @@ func TestPVZService_GetPVZsWithReceptions(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzRepo.On("GetPagedPVZsFilteredByReceptionTime",
@@ -106,7 +110,7 @@ func TestPVZService_GetPVZsWithReceptions(t *testing.T) {
 			10).
 			Return([]models.PVZWithReceptions{}, nil)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		result, err := s.GetPVZsWithReceptions(context.Background(), nil, nil, 1, 10)
 
@@ -119,6 +123,7 @@ func TestPVZService_GetPVZsWithReceptions(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		expectedErr := errors.New("database error")
@@ -130,7 +135,7 @@ func TestPVZService_GetPVZsWithReceptions(t *testing.T) {
 			mock.Anything).
 			Return([]models.PVZWithReceptions(nil), expectedErr)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		_, err := s.GetPVZsWithReceptions(context.Background(), nil, nil, 1, 10)
 
@@ -145,6 +150,7 @@ func TestPVZService_CloseLastReception(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
@@ -160,7 +166,7 @@ func TestPVZService_CloseLastReception(t *testing.T) {
 			models.ReceptionStatusClosed).
 			Return(expectedReception, nil)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		result, err := s.CloseLastReception(context.Background(), pvzID)
 
@@ -173,6 +179,7 @@ func TestPVZService_CloseLastReception(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
@@ -184,7 +191,7 @@ func TestPVZService_CloseLastReception(t *testing.T) {
 			models.ReceptionStatusClosed).
 			Return((*models.Reception)(nil), expectedErr)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		_, err := s.CloseLastReception(context.Background(), pvzID)
 
@@ -199,12 +206,13 @@ func TestPVZService_DeleteLastProduct(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
 		productRepo.On("DeleteLastProductByPVZID", mock.Anything, pvzID).Return(nil)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		err := s.DeleteLastProduct(context.Background(), pvzID)
 
@@ -216,13 +224,14 @@ func TestPVZService_DeleteLastProduct(t *testing.T) {
 		pvzRepo := new(MockPVZRepository)
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
 		expectedErr := errors.New("product not found")
 		productRepo.On("DeleteLastProductByPVZID", mock.Anything, pvzID).Return(expectedErr)
 
-		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo)
+		s := service.NewPVZService(log, pvzRepo, receptionRepo, productRepo, metrics)
 
 		err := s.DeleteLastProduct(context.Background(), pvzID)
 

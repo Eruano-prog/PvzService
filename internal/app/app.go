@@ -5,14 +5,17 @@ import (
 	pvzGrpc "AvitoPvz/internal/grpc"
 	pvzGrpcpb "AvitoPvz/internal/grpc/api"
 	"AvitoPvz/internal/jwt"
+	"AvitoPvz/internal/monitoring"
 	"AvitoPvz/internal/postgres"
 	"AvitoPvz/internal/postgres/repository"
 	"AvitoPvz/internal/rest/controllers"
+	"AvitoPvz/internal/rest/middleware"
 	"AvitoPvz/internal/service"
 	"context"
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -58,11 +61,13 @@ func Run() error {
 	receptionRepository := repository.NewReceptionRepo(log, db)
 	productRepository := repository.NewProductRepo(log, db)
 
+	metrics := monitoring.NewPrometheusMetrics()
+
 	// Service
 	userService := service.NewUserService(log, tokenService, userRepository)
-	pvzService := service.NewPVZService(log, pvzRepository, receptionRepository, productRepository)
-	receptionService := service.NewReceptionService(log, receptionRepository)
-	productService := service.NewProductService(log, productRepository, receptionRepository)
+	pvzService := service.NewPVZService(log, pvzRepository, receptionRepository, productRepository, metrics)
+	receptionService := service.NewReceptionService(log, receptionRepository, metrics)
+	productService := service.NewProductService(log, productRepository, receptionRepository, metrics)
 	// Controller
 	authController := controllers.NewAuthController(log, userService)
 	pvzController := controllers.NewPVZController(log, pvzService)
@@ -70,7 +75,9 @@ func Run() error {
 	productController := controllers.NewProductController(log, productService)
 
 	// HTTP server
+	httpMetrics := monitoring.NewPrometheusHTTPMetrics()
 	mux := http.NewServeMux()
+	wrappedMux := middleware.Metrics(mux, httpMetrics)
 
 	authController.Register(mux)
 	pvzController.Register(mux, tokenService)
@@ -80,7 +87,7 @@ func Run() error {
 	httpServer := http.Server{
 		Addr:        cfg.HTTPConfig.Address,
 		ReadTimeout: cfg.HTTPConfig.Timeout,
-		Handler:     mux,
+		Handler:     wrappedMux,
 		BaseContext: func(_ net.Listener) context.Context { return ctx },
 	}
 
@@ -105,6 +112,15 @@ func Run() error {
 	}()
 
 	errGroup, _ := errgroup.WithContext(ctx)
+
+	errGroup.Go(func() error {
+		http.Handle("/metrics", promhttp.Handler())
+		if err := http.ListenAndServe(cfg.PrometheusAddress, nil); err != nil {
+			log.Error("failed to start metrics server", "error", err)
+			return err
+		}
+		return nil
+	})
 
 	errGroup.Go(func() error {
 		err := httpServer.ListenAndServe()

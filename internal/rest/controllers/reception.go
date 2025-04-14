@@ -22,7 +22,7 @@ func NewReceptionController(log *slog.Logger, receptionService rest.ReceptionSer
 }
 
 func (r *ReceptionController) Register(mux *http.ServeMux, tokenVerifier middleware.Verifier) {
-	mux.Handle("POST /receptions", middleware.AuthMiddleware(http.HandlerFunc(r.createReceptionHandler), tokenVerifier, r.log, middleware.EmployeeOnly))
+	mux.Handle("POST /receptions", middleware.Auth(http.HandlerFunc(r.createReceptionHandler), tokenVerifier, r.log, middleware.EmployeeOnly))
 }
 
 func (r *ReceptionController) createReceptionHandler(w http.ResponseWriter, req *http.Request) {

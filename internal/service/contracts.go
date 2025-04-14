@@ -39,3 +39,9 @@ type ProductRepository interface {
 
 	DeleteLastProductByPVZID(ctx context.Context, pvzID uuid.UUID) error
 }
+
+type BusinessMetrics interface {
+	IncPVZCreated()
+	IncReceptionCreated()
+	IncProductAdded()
+}

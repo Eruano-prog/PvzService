@@ -18,6 +18,7 @@ func TestProductService_AddProduct(t *testing.T) {
 	t.Run("successful add", func(t *testing.T) {
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
@@ -25,7 +26,7 @@ func TestProductService_AddProduct(t *testing.T) {
 		receptionRepo.On("GetActiveReceptionInPVZ", mock.Anything, pvzID).Return(reception, nil)
 		productRepo.On("InsertProductIfReceptionNotClosed", mock.Anything, mock.AnythingOfType("*models.Product")).Return(nil)
 
-		s := service.NewProductService(log, productRepo, receptionRepo)
+		s := service.NewProductService(log, productRepo, receptionRepo, metrics)
 
 		result, err := s.AddProduct(context.Background(), models.ProductTypeElectronics, pvzID)
 
@@ -39,13 +40,14 @@ func TestProductService_AddProduct(t *testing.T) {
 	t.Run("error when no active reception", func(t *testing.T) {
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
 		expectedErr := errors.New("no active reception")
 		receptionRepo.On("GetActiveReceptionInPVZ", mock.Anything, pvzID).Return((*models.Reception)(nil), expectedErr)
 
-		s := service.NewProductService(log, productRepo, receptionRepo)
+		s := service.NewProductService(log, productRepo, receptionRepo, metrics)
 
 		_, err := s.AddProduct(context.Background(), models.ProductTypeElectronics, pvzID)
 
@@ -58,6 +60,7 @@ func TestProductService_AddProduct(t *testing.T) {
 	t.Run("error when product insertion fails", func(t *testing.T) {
 		receptionRepo := new(MockReceptionRepository)
 		productRepo := new(MockProductRepository)
+		metrics := NewMockMetrics()
 		log := slog.Default()
 
 		pvzID := uuid.New()
@@ -66,7 +69,7 @@ func TestProductService_AddProduct(t *testing.T) {
 		receptionRepo.On("GetActiveReceptionInPVZ", mock.Anything, pvzID).Return(reception, nil)
 		productRepo.On("InsertProductIfReceptionNotClosed", mock.Anything, mock.AnythingOfType("*models.Product")).Return(insertErr)
 
-		s := service.NewProductService(log, productRepo, receptionRepo)
+		s := service.NewProductService(log, productRepo, receptionRepo, metrics)
 
 		_, err := s.AddProduct(context.Background(), models.ProductTypeElectronics, pvzID)
 

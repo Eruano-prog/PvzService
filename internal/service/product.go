@@ -15,6 +15,8 @@ type Product struct {
 
 	receptionRepository ReceptionRepository
 	productRepository   ProductRepository
+
+	metrics BusinessMetrics
 }
 
 func (p Product) AddProduct(ctx context.Context, productType models.ProductType, pvzID uuid.UUID) (*models.Product, error) {
@@ -37,13 +39,16 @@ func (p Product) AddProduct(ctx context.Context, productType models.ProductType,
 		return nil, err
 	}
 
+	p.metrics.IncProductAdded()
+
 	return product, nil
 }
 
-func NewProductService(log *slog.Logger, productRepository ProductRepository, receptionRepository ReceptionRepository) rest.ProductService {
+func NewProductService(log *slog.Logger, productRepository ProductRepository, receptionRepository ReceptionRepository, metrics BusinessMetrics) rest.ProductService {
 	return &Product{
 		log:                 log,
 		productRepository:   productRepository,
 		receptionRepository: receptionRepository,
+		metrics:             metrics,
 	}
 }

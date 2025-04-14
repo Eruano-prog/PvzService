@@ -13,6 +13,7 @@ import (
 type Reception struct {
 	log                 *slog.Logger
 	receptionRepository ReceptionRepository
+	metrics             BusinessMetrics
 }
 
 func (r Reception) CreateReception(ctx context.Context, pvzID uuid.UUID) (*models.Reception, error) {
@@ -29,12 +30,15 @@ func (r Reception) CreateReception(ctx context.Context, pvzID uuid.UUID) (*model
 		return nil, err
 	}
 
+	r.metrics.IncReceptionCreated()
+
 	return reception, nil
 }
 
-func NewReceptionService(log *slog.Logger, receptionRepo ReceptionRepository) rest.ReceptionService {
+func NewReceptionService(log *slog.Logger, receptionRepo ReceptionRepository, metrics BusinessMetrics) rest.ReceptionService {
 	return &Reception{
 		log:                 log,
 		receptionRepository: receptionRepo,
+		metrics:             metrics,
 	}
 }
